@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { ref } from "@vue/runtime-core";
+import { ref, shallowRef } from "@vue/runtime-core";
 import SignComponent from "./components/SignComponent.vue";
 import MobileSignComponent from "./components/MobileSignComponent.vue";
 import PdfConvertComponent from "./components/PdfConvertComponent.vue";
 import PdfAddLayers from "./components/PdfAddLayers.vue";
 
 const tabs = [
-    { name: "e-İmza", tag: SignComponent },
-    { name: "Mobil İmza", tag: MobileSignComponent },
-    { name: "PDF Convert", tag: PdfConvertComponent },
-    { name: "PDF Add Layers", tag: PdfAddLayers },
+    { name: "e-İmza", tag: shallowRef(SignComponent) },
+    { name: "Mobil İmza", tag: shallowRef(MobileSignComponent) },
+    { name: "PDF Convert", tag: shallowRef(PdfConvertComponent) },
+    { name: "PDF Add Layers", tag: shallowRef(PdfAddLayers) },
 ];
 
 const selectedTab = ref(tabs[0]);

@@ -58,7 +58,7 @@ export interface CreateStateOnOnaylarimApiResult {
 }
 
 export interface FinishSignResult {
-    isSuccess: string;
+    isSuccess: boolean;
 }
 
 export interface GetFingerPrintRequest {
@@ -67,4 +67,8 @@ export interface GetFingerPrintRequest {
 
 export interface MobileSignRequest {
     operationId: string;
+}
+
+export interface MobileSignResult {
+    isSuccess: boolean;
 }

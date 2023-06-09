@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref } from "@vue/runtime-core";
 import axios, { AxiosError } from "axios";
+import { v4 as uuidv4 } from "uuid";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/vue";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
 import { DevicePhoneMobileIcon } from "@heroicons/vue/24/outline";
 import CardComponent from "./CardComponent.vue";
-import type { GetFingerPrintRequest } from "@/types/Types";
+import type { GetFingerPrintRequest, MobileSignResult } from "@/types/Types";
 
 const yourWebApiUrl = "https://localhost:7294";
 
@@ -13,6 +14,7 @@ const waitString = ref("");
 const operationId = ref("");
 const phoneNumber = ref("");
 const fingerPrint = ref("");
+const isSuccess = ref(false);
 
 const operators = [
     { id: "TURKCELL", name: "Turkcell" },
@@ -27,23 +29,29 @@ const signatureTypes = [
 ];
 const selectedSignatureType = ref(signatureTypes[0]);
 
-function uuidv4(): string {
-    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c: string) => {
-        const randomValues = new Uint8Array(1);
-        crypto.getRandomValues(randomValues);
-        const byte = randomValues[0];
-        return (c ^ (byte & (15 >> (parseInt(c, 10) / 4)))).toString(16);
-    });
-}
+// https://github.com/uuidjs/uuid kullanılmak istenmediğinde onun yerine aşağıdaki fonksiyon kullanılabilir
+// function uuidv4(): string {
+//     return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c: string) => {
+//         const randomValues = new Uint8Array(1);
+//         crypto.getRandomValues(randomValues);
+//         const byte = randomValues[0];
+//         return (c ^ (byte & (15 >> (parseInt(c, 10) / 4)))).toString(16);
+//     });
+// }
 
 function MobileSign() {
+    // Parmak izi değerinin alınması için mobil imza işlemi bitmeden operationId'nin bilinmesi gerekmektedir. Bu nedenle operationId client side'da oluşturulmuştur.
     operationId.value = uuidv4();
     fingerPrint.value = "";
     const mobileSignRequest = { operationId: operationId.value, phoneNumber: phoneNumber.value, operator: selectedOperator.value.id, signatureType: selectedSignatureType.value.id };
     waitString.value = "İmza işlemi hazırlanıyor.";
-    axios.post(yourWebApiUrl + "/Onaylarim/MobileSign", mobileSignRequest).then((createStateOnOnaylarimApiResponse) => {
-        waitString.value = "İmza işlemi baştıldı.";
+    // mobil imza işlemi yapılır
+    axios.post(yourWebApiUrl + "/Onaylarim/MobileSign", mobileSignRequest).then((mobileSignResponse) => {
+        const mobileSignResult = mobileSignResponse.data as MobileSignResult;
+        isSuccess.value = mobileSignResult.isSuccess;
+        waitString.value = "İmza işlemi tamamlandı.";
     });
+    // mobil imza işlemi sürerken işleme ilişkin parmak izi değeri alınır
     axios.post(yourWebApiUrl + "/Onaylarim/GetFingerPrint", { operationId: operationId.value } as GetFingerPrintRequest).then((getFingerResponse) => {
         console.log("getFingerResponse", getFingerResponse);
         fingerPrint.value = getFingerResponse.data.fingerPrint;
@@ -168,6 +176,9 @@ function DownloadFile() {
                 <div class="pt-6 pb-2 text-sm text-gray-700" v-if="fingerPrint">
                     <p>Parmak izi</p>
                     <p class="font-medium text-sm">{{ fingerPrint }}</p>
+                </div>
+                <div class="pt-4 border-t border-gray-200" v-if="isSuccess">
+                    <p v-if="operationId && operationId.length > 0" @click="DownloadFile()" class="max-w-2xl text-sm leading-6 text-orange-500 hover:underline cursor-pointer">e-İmzalı dosyayı indir</p>
                 </div>
             </template>
         </CardComponent>

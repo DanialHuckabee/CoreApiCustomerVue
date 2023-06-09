@@ -47,8 +47,11 @@ function OpenSignerApp() {
 
 // onaylarim API'den e-imza aracının güncel versiyon bilgisini alır
 function GetSignerAppVersions() {
+    // CORS hatası alacaktır. Ancak demo uygulamanın çalışmasına engel bir durum değildir.
+    // ONAYLARIM on-Prem kurulduğunda, client uygulamadan gelen requestlere izin verilecek şekilde CORS ayarı yapılacaktır.
+    // ONAYLARIM SaaS kullanıldığında, client uygulamadan gelen requestlere izin verilecek şekilde CORS ayarı yapılacaktır.
     axios
-        .get(onaylarimApiUrl + "/sign/GetSignerAppVersions")
+        .get("https://apitest.onaylarim.com/sign/GetSignerAppVersions")
         .then((result) => {
             if (result.data.error) {
                 console.log("Uygulama güncel sürümü alınırken hata oluştu. " + result.data.error);
