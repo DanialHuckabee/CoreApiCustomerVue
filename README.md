@@ -1,12 +1,16 @@
 # Sample Porject for ONAYLARIM coreAPI
 
-## Getting Started
+ONAYLARIM coreAPI için örnek istemci uygulamasıdır.
 
-Download [Server Project](https://github.com/DanialHuckabee/CoreApiCustomerApi) for the server side.
+![image](https://github.com/DanialHuckabee/CoreApiCustomerVue/assets/14294898/dc7c4193-7399-4c3d-b39f-291aeb1b8aef)
 
-Update `yourWebApiUrl` variables in the code to the URL of server side project.
+## Başlarken
 
-`ONAYLARIM e-İmza Aracı` accepts requests from only approved URL's. So please send us your client side application's URL.
+Sunucu tarafı için [Sunucu Projesini](https://github.com/DanialHuckabee/CoreApiCustomerApi) indirin.
+
+Koddaki yourWebApiUrl değişkenlerini sunucu tarafı projesinin URL'sine güncelleyin.
+
+ONAYLARIM e-İmza Aracı, yalnızca onaylanmış URL'lerden gelen istekleri kabul eder. Bu nedenle lütfen bize istemci tarafı uygulamanızın URL'sini gönderin.
 
 ## Recommended IDE Setup
 
