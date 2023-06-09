@@ -6,8 +6,8 @@ import { ExclamationTriangleIcon, ComputerDesktopIcon, ArrowDownTrayIcon, ClockI
 import type { CertificateInfo, GetSignerAppVersionsResult, SignerAppPingResult, SignerAppResetResult, SignStepTwoResult, CreateStateOnOnaylarimApiResult, FinishSignResult } from "../types/Types";
 import CardComponent from "./CardComponent.vue";
 
+// Kendi ortamınızdaki server side projesinin URL'si ile değiştiriniz.
 const yourWebApiUrl = "https://localhost:7294";
-const onaylarimApiUrl = "https://localhost:44337";
 
 // Kullanıcıya gösterilen mesaj
 const waitString = ref("");
@@ -157,7 +157,7 @@ function Sign(certificate: CertificateInfo) {
             slot: certificate.slot,
             pin: certificate.pin,
         };
-        // e-imza aracına e-imza atması için istekte bulunulur
+        // e-imza aracına e-imza atması için istekte bulunulur. Kartta bulunan sertifika ile imzalama işlemi bu adımda yapılır.
         axios.post("https://localsigner.onaylarim.com:8099/signStepTwo", JSON.stringify(signStepTwoRequest), config).then((signStepTwoResponse) => {
             waitString.value = "İmza işlemi gerçekleştiriliyor.";
             const signStepTwoResult = signStepTwoResponse.data as SignStepTwoResult;

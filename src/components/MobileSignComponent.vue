@@ -8,25 +8,37 @@ import { DevicePhoneMobileIcon } from "@heroicons/vue/24/outline";
 import CardComponent from "./CardComponent.vue";
 import type { GetFingerPrintRequest, MobileSignResult } from "@/types/Types";
 
+// Kendi ortamınızdaki server side projesinin URL'si ile değiştiriniz.
 const yourWebApiUrl = "https://localhost:7294";
 
+// Kullanıcıya gösterilen mesaj
 const waitString = ref("");
+// coreAPI'de kullanılacak tekil operasyon numarası
 const operationId = ref("");
+// imza atarken kullanılacak telefon numarası. 5334440099 şeklinde olmalıdır
 const phoneNumber = ref("");
+// kullanıcıya gösterilen mobil imza parmak izi değeri
 const fingerPrint = ref("");
+// işlemin başarıyla tamamlanıp tamamlanmadığını gösterir
 const isSuccess = ref(false);
 
+// mobil imza için kullanılacak operatörler. Id değerinde yazan ifade API'ye gönderilir. Bu ifadeler değiştirilmemelidir.
 const operators = [
     { id: "TURKCELL", name: "Turkcell" },
     { id: "VODAFONE", name: "Vodafone" },
     { id: "AVEA", name: "Türk Telekom" },
 ];
+
+// kullanıcının seçtiği mobil operator
 const selectedOperator = ref(operators[0]);
 
+// imza atarken kullanılacak e-imza tür
 const signatureTypes = [
     { id: "pades", title: "Pades" },
     { id: "cades", title: "Cades" },
 ];
+
+// kullanıcının seçtiği imza türü
 const selectedSignatureType = ref(signatureTypes[0]);
 
 // https://github.com/uuidjs/uuid kullanılmak istenmediğinde onun yerine aşağıdaki fonksiyon kullanılabilir
