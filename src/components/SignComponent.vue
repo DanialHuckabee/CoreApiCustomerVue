@@ -3,11 +3,8 @@ import { handleError, onMounted, ref } from "@vue/runtime-core";
 import axios, { AxiosError } from "axios";
 import { CpuChipIcon } from "@heroicons/vue/20/solid";
 import { ExclamationTriangleIcon, ComputerDesktopIcon, ArrowDownTrayIcon, ClockIcon, LockClosedIcon, CheckBadgeIcon, Cog6ToothIcon } from "@heroicons/vue/24/outline";
-import { type CertificateInfo, type GetSignerAppVersionsResult, type SignerAppPingResult, type SignerAppResetResult, type SignStepTwoResult, type CreateStateOnOnaylarimApiResult, type FinishSignResult, HandleError } from "../types/Types";
+import { type CertificateInfo, type GetSignerAppVersionsResult, type SignerAppPingResult, type SignerAppResetResult, type SignStepTwoResult, type CreateStateOnOnaylarimApiResult, type FinishSignResult, HandleError, yourWebApiUrl } from "../types/Types";
 import CardComponent from "./CardComponent.vue";
-
-// Kendi ortamınızdaki server side projesinin URL'si ile değiştiriniz.
-const yourWebApiUrl = "https://localhost:7294";
 
 // Kullanıcıya gösterilen mesaj
 const waitString = ref("");

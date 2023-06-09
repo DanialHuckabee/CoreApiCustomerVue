@@ -3,10 +3,7 @@ import { ref } from "@vue/runtime-core";
 import axios, { AxiosError } from "axios";
 import CardComponent from "./CardComponent.vue";
 import { DocumentTextIcon } from "@heroicons/vue/24/outline";
-import { HandleError } from "@/types/Types";
-
-// Kendi ortamınızdaki server side projesinin URL'si ile değiştiriniz.
-const yourWebApiUrl = "https://localhost:7294";
+import { HandleError, yourWebApiUrl } from "@/types/Types";
 
 // Kullanıcıya gösterilen mesaj
 const waitString = ref("");

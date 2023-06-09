@@ -6,10 +6,7 @@ import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headless
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
 import { DevicePhoneMobileIcon } from "@heroicons/vue/24/outline";
 import CardComponent from "./CardComponent.vue";
-import { HandleError, type GetFingerPrintRequest, type MobileSignResult } from "@/types/Types";
-
-// Kendi ortamınızdaki server side projesinin URL'si ile değiştiriniz.
-const yourWebApiUrl = "https://localhost:7294";
+import { HandleError, type GetFingerPrintRequest, type MobileSignResult, yourWebApiUrl } from "@/types/Types";
 
 // Kullanıcıya gösterilen mesaj
 const waitString = ref("");
