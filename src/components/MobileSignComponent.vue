@@ -212,7 +212,7 @@ function DownloadFile() {
                     <p>Parmak izi</p>
                     <p class="font-medium text-sm">{{ fingerPrint }}</p>
                 </div>
-                <div class="pt-4 border-t border-gray-200" v-if="waitString">
+                <div class="mt-4 pt-4 border-t border-gray-200" v-if="waitString">
                     <p class="max-w-2xl text-sm leading-6 text-gray-500">{{ waitString }}</p>
 
                     <p v-if="isSuccess" @click="DownloadFile()" class="max-w-2xl text-sm leading-6 text-orange-500 hover:underline cursor-pointer">e-İmzalı dosyayı indir</p>
