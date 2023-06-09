@@ -2,7 +2,7 @@
 
 ## Getting Started
 
-Download Xxx Project for the server side.
+Download [Server Project](https://github.com/DanialHuckabee/CoreApiCustomerApi) for the server side.
 
 Update `yourWebApiUrl` variables in the code to the URL of server side project.
 
