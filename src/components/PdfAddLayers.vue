@@ -3,17 +3,23 @@ import { ref } from "@vue/runtime-core";
 import axios, { AxiosError } from "axios";
 import CardComponent from "./CardComponent.vue";
 import { DocumentTextIcon } from "@heroicons/vue/24/outline";
+import { HandleError } from "@/types/Types";
 
 // Kendi ortamınızdaki server side projesinin URL'si ile değiştiriniz.
 const yourWebApiUrl = "https://localhost:7294";
 
 // Kullanıcıya gösterilen mesaj
 const waitString = ref("");
+// yapılan işlemler
+const logs = ref([] as Array<string>);
 
 function AddLayers() {
+    logs.value.push("Sizin sunucu katmanına AddLayers isteği gönderiliyor.");
     axios
         .get(yourWebApiUrl + "/Onaylarim/AddLayers", { responseType: "blob" })
         .then((e) => {
+            logs.value.push("Sizin sunucu katmanına AddLayers isteği gönderildi. Detaylar için console'a bakınız.");
+            console.log("Sizin sunucu katmanına AddLayers isteği gönderildi.", e);
             if (e.data.error) {
                 waitString.value = "Hata oluştu. " + e.data.error;
             } else {
@@ -34,17 +40,12 @@ function AddLayers() {
                 fileLink.setAttribute("download", filename);
                 document.body.appendChild(fileLink);
                 fileLink.click();
+                logs.value.push("Dosya indirildi.");
             }
         })
-        .catch((error: AxiosError) => {
-            if (error.response) {
-                waitString.value = "Hata oluştu. " + error.response.data;
-            } else {
-                waitString.value = "Hata oluştu. " + error.code;
-            }
-        })
-        .catch((error: Error | AxiosError) => {
-            waitString.value = "Hata oluştu. " + error.message;
+        .catch((error) => {
+            logs.value.push("Sizin sunucu katmanına AddLayers isteği gönderilemedi. Mesaj: " + HandleError(error) + " Detaylar için console'a bakınız.");
+            console.log("Sizin sunucu katmanına AddLayers isteği gönderilemedi.", error);
         });
 }
 </script>
@@ -76,5 +77,10 @@ function AddLayers() {
                 </div>
             </template>
         </CardComponent>
+        <div class="pt-4 border-t border-gray-200 text-xs" v-if="logs && logs.length > 0">
+            <p class="leading-6 text-sm font-medium">İşlemler</p>
+
+            <p v-for="(logItem, index) in logs" :key="index" class="">{{ logItem }}</p>
+        </div>
     </main>
 </template>

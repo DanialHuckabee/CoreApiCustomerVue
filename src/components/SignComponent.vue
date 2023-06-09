@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from "@vue/runtime-core";
+import { handleError, onMounted, ref } from "@vue/runtime-core";
 import axios, { AxiosError } from "axios";
 import { CpuChipIcon } from "@heroicons/vue/20/solid";
 import { ExclamationTriangleIcon, ComputerDesktopIcon, ArrowDownTrayIcon, ClockIcon, LockClosedIcon, CheckBadgeIcon, Cog6ToothIcon } from "@heroicons/vue/24/outline";
-import type { CertificateInfo, GetSignerAppVersionsResult, SignerAppPingResult, SignerAppResetResult, SignStepTwoResult, CreateStateOnOnaylarimApiResult, FinishSignResult } from "../types/Types";
+import { type CertificateInfo, type GetSignerAppVersionsResult, type SignerAppPingResult, type SignerAppResetResult, type SignStepTwoResult, type CreateStateOnOnaylarimApiResult, type FinishSignResult, HandleError } from "../types/Types";
 import CardComponent from "./CardComponent.vue";
 
 // Kendi ortamınızdaki server side projesinin URL'si ile değiştiriniz.
@@ -129,21 +129,10 @@ function LocalSignerReset() {
                 return;
             }
         })
-        .catch(async (error) => {
-            if (error.response) {
-                logs.value.push("e-İmza aracına RESET isteği gönderilemedi. Detaylar için console'a bakınız.");
-                console.log("e-İmza aracına RESET isteği gönderilemedi.", error);
-                localSignerMode.value = "baglantiKurulamadı";
-            } else if (error.request) {
-                logs.value.push("e-İmza aracına RESET isteği gönderilemedi. Detaylar için console'a bakınız.");
-                console.log("e-İmza aracına RESET isteği gönderilemedi.", error);
-                localSignerMode.value = "baglantiKurulamadı";
-            } else {
-                localSignerMode.value = "baglantiKurulamadı";
-                logs.value.push("e-İmza aracına RESET isteği gönderilemedi. Detaylar için console'a bakınız.");
-                console.log("e-İmza aracına RESET isteği gönderilemedi.", error);
-                console.log("baglantiKurulamadı3", error);
-            }
+        .catch((error) => {
+            logs.value.push("e-İmza aracına RESET isteği gönderilemedi. Mesaj: " + HandleError(error) + " Detaylar için console'a bakınız.");
+            console.log("e-İmza aracına RESET isteği gönderilemedi.", error);
+            localSignerMode.value = "baglantiKurulamadı";
         })
         .finally(() => {
             logs.value.push("e-İmza aracına durumu: " + localSignerMode.value);
@@ -156,66 +145,84 @@ function Sign(certificate: CertificateInfo) {
     const createStateOnOnaylarimApiRequest = { certificate: certificate.data, signatureType: selectedSignatureType.value.id };
     waitString.value = "İmza işlemi hazırlanıyor.";
     logs.value.push("Sizin sunucu katmanına CreateStateOnOnaylarimApi isteği gönderiliyor.");
-    axios.post(yourWebApiUrl + "/Onaylarim/CreateStateOnOnaylarimApi", createStateOnOnaylarimApiRequest).then((createStateOnOnaylarimApiResponse) => {
-        logs.value.push("Sizin sunucu katmanına CreateStateOnOnaylarimApi isteği gönderildi. Detaylar için console'a bakınız.");
-        console.log("Sizin sunucu katmanına CreateStateOnOnaylarimApi isteği gönderildi.", createStateOnOnaylarimApiResponse);
-        waitString.value = "İmza işlemi baştıldı.";
-        const config = {
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-        };
-        const createStateOnOnaylarimApiResult = createStateOnOnaylarimApiResponse.data as CreateStateOnOnaylarimApiResult;
+    axios
+        .post(yourWebApiUrl + "/Onaylarim/CreateStateOnOnaylarimApi", createStateOnOnaylarimApiRequest)
+        .then((createStateOnOnaylarimApiResponse) => {
+            logs.value.push("Sizin sunucu katmanına CreateStateOnOnaylarimApi isteği gönderildi. Detaylar için console'a bakınız.");
+            console.log("Sizin sunucu katmanına CreateStateOnOnaylarimApi isteği gönderildi.", createStateOnOnaylarimApiResponse);
+            waitString.value = "İmza işlemi baştıldı.";
+            const config = {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+            };
+            const createStateOnOnaylarimApiResult = createStateOnOnaylarimApiResponse.data as CreateStateOnOnaylarimApiResult;
 
-        const signStepTwoRequest = {
-            keyId: createStateOnOnaylarimApiResult.keyID,
-            keySecret: createStateOnOnaylarimApiResult.keySecret,
-            state: createStateOnOnaylarimApiResult.state,
-            pkcsLibrary: certificate.pkcsLibrary,
-            slot: certificate.slot,
-            pin: certificate.pin,
-        };
-        // e-imza aracına e-imza atması için istekte bulunulur. Kartta bulunan sertifika ile imzalama işlemi bu adımda yapılır.
-        logs.value.push("e-İmza aracına SIGNSTEPTWO isteği gönderiliyor.");
-        axios.post("https://localsigner.onaylarim.com:8099/signStepTwo", JSON.stringify(signStepTwoRequest), config).then((signStepTwoResponse) => {
-            const signStepTwoResult = signStepTwoResponse.data as SignStepTwoResult;
-            if (signStepTwoResult.error !== undefined && signStepTwoResult.error !== null) {
-                logs.value.push("e-İmza aracına SIGNSTEPTWO isteği hata döndü. Detaylar için console'a bakınız.");
-                console.log("e-İmza aracına SIGNSTEPTWO isteği sonucu.", signStepTwoResult);
-                waitString.value = "Hata oluştu. " + signStepTwoResult.error;
-            } else {
-                if (signStepTwoResult.error) {
-                    logs.value.push("e-İmza aracına SIGNSTEPTWO isteği hata döndü. Detaylar için console'a bakınız.");
-                    console.log("e-İmza aracına SIGNSTEPTWO isteği sonucu.", signStepTwoResult);
-                    waitString.value = "Hata oluştu. " + signStepTwoResult.error;
-                } else {
-                    logs.value.push("e-İmza aracına SIGNSTEPTWO isteği başarıyla tamamlandı.");
-                    // e-imza son adım çalıştırılır. 2. adımda imzalanan veri API'ye gönderilir
-                    const finishSignRequest = {
-                        keyId: createStateOnOnaylarimApiResult.keyID,
-                        keySecret: createStateOnOnaylarimApiResult.keySecret,
-                        signedData: signStepTwoResult.signedData,
-                        operationId: createStateOnOnaylarimApiResult.operationId,
-                        signatureType: selectedSignatureType.value.id,
-                    };
-                    logs.value.push("Sizin sunucu katmanına FinishSign isteği gönderiliyor.");
-                    axios.post(yourWebApiUrl + "/Onaylarim/FinishSign", finishSignRequest).then((finishSignResponse) => {
-                        logs.value.push("Sizin sunucu katmanına FinishSign isteği gönderildi. Detaylar için console'a bakınız.");
-                        console.log("Sizin sunucu katmanına FinishSign isteği gönderildi.", createStateOnOnaylarimApiResponse);
-                        const finishSignResult = finishSignResponse.data as FinishSignResult;
-                        if (finishSignResult.isSuccess) {
-                            logs.value.push("Sizin sunucu katmanına FinishSign istiği sonucu: İşlem başarılı.");
-                            waitString.value = "İmza işlemi tamamlandı.";
-                            operationId.value = createStateOnOnaylarimApiResult.operationId;
+            const signStepTwoRequest = {
+                keyId: createStateOnOnaylarimApiResult.keyID,
+                keySecret: createStateOnOnaylarimApiResult.keySecret,
+                state: createStateOnOnaylarimApiResult.state,
+                pkcsLibrary: certificate.pkcsLibrary,
+                slot: certificate.slot,
+                pin: certificate.pin,
+            };
+            // e-imza aracına e-imza atması için istekte bulunulur. Kartta bulunan sertifika ile imzalama işlemi bu adımda yapılır.
+            logs.value.push("e-İmza aracına SIGNSTEPTWO isteği gönderiliyor.");
+            axios
+                .post("https://localsigner.onaylarim.com:8099/signStepTwo", JSON.stringify(signStepTwoRequest), config)
+                .then((signStepTwoResponse) => {
+                    const signStepTwoResult = signStepTwoResponse.data as SignStepTwoResult;
+                    if (signStepTwoResult.error !== undefined && signStepTwoResult.error !== null) {
+                        logs.value.push("e-İmza aracına SIGNSTEPTWO isteği hata döndü. Detaylar için console'a bakınız.");
+                        console.log("e-İmza aracına SIGNSTEPTWO isteği sonucu.", signStepTwoResult);
+                        waitString.value = "Hata oluştu. " + signStepTwoResult.error;
+                    } else {
+                        if (signStepTwoResult.error) {
+                            logs.value.push("e-İmza aracına SIGNSTEPTWO isteği hata döndü. Detaylar için console'a bakınız.");
+                            console.log("e-İmza aracına SIGNSTEPTWO isteği sonucu.", signStepTwoResult);
+                            waitString.value = "Hata oluştu. " + signStepTwoResult.error;
                         } else {
-                            logs.value.push("Sizin sunucu katmanına FinishSign istiği sonucu: İşlem başarısız.");
-                            waitString.value = "İmza işlemi tamamlanamadı.";
+                            logs.value.push("e-İmza aracına SIGNSTEPTWO isteği başarıyla tamamlandı.");
+                            // e-imza son adım çalıştırılır. 2. adımda imzalanan veri API'ye gönderilir
+                            const finishSignRequest = {
+                                keyId: createStateOnOnaylarimApiResult.keyID,
+                                keySecret: createStateOnOnaylarimApiResult.keySecret,
+                                signedData: signStepTwoResult.signedData,
+                                operationId: createStateOnOnaylarimApiResult.operationId,
+                                signatureType: selectedSignatureType.value.id,
+                            };
+                            logs.value.push("Sizin sunucu katmanına FinishSign isteği gönderiliyor.");
+                            axios
+                                .post(yourWebApiUrl + "/Onaylarim/FinishSign", finishSignRequest)
+                                .then((finishSignResponse) => {
+                                    logs.value.push("Sizin sunucu katmanına FinishSign isteği gönderildi. Detaylar için console'a bakınız.");
+                                    console.log("Sizin sunucu katmanına FinishSign isteği gönderildi.", createStateOnOnaylarimApiResponse);
+                                    const finishSignResult = finishSignResponse.data as FinishSignResult;
+                                    if (finishSignResult.isSuccess) {
+                                        logs.value.push("Sizin sunucu katmanına FinishSign istiği sonucu: İşlem başarılı.");
+                                        waitString.value = "İmza işlemi tamamlandı.";
+                                        operationId.value = createStateOnOnaylarimApiResult.operationId;
+                                    } else {
+                                        logs.value.push("Sizin sunucu katmanına FinishSign istiği sonucu: İşlem başarısız.");
+                                        waitString.value = "İmza işlemi tamamlanamadı.";
+                                    }
+                                })
+                                .catch((error) => {
+                                    logs.value.push("Sizin sunucu katmanına FinishSign isteği gönderilemedi. Mesaj: " + HandleError(error) + " Detaylar için console'a bakınız.");
+                                    console.log("Sizin sunucu katmanına FinishSign isteği gönderilemedi.", error);
+                                });
                         }
-                    });
-                }
-            }
+                    }
+                })
+                .catch((error) => {
+                    logs.value.push("e-İmza aracına SIGNSTEPTWO isteği gönderilemedi. Mesaj: " + HandleError(error) + " Detaylar için console'a bakınız.");
+                    console.log("e-İmza aracına SIGNSTEPTWO isteği gönderilemedi.", error);
+                });
+        })
+        .catch((error) => {
+            logs.value.push("Sizin sunucu katmanına CreateStateOnOnaylarimApi isteği gönderilemedi. Mesaj: " + HandleError(error) + " Detaylar için console'a bakınız.");
+            console.log("Sizin sunucu katmanına CreateStateOnOnaylarimApi isteği gönderilemedi.", error);
         });
-    });
 }
 
 function DownloadFile() {
@@ -244,15 +251,9 @@ function DownloadFile() {
                 fileLink.click();
             }
         })
-        .catch((error: AxiosError) => {
-            if (error.response) {
-                waitString.value = "Hata oluştu. " + error.response.data;
-            } else {
-                waitString.value = "Hata oluştu. " + error.code;
-            }
-        })
-        .catch((error: Error | AxiosError) => {
-            waitString.value = "Hata oluştu. " + error.message;
+        .catch((error) => {
+            logs.value.push("Sizin sunucu katmanına DownloadSignedFileFromOnaylarimApi isteği gönderilemedi. Mesaj: " + HandleError(error) + " Detaylar için console'a bakınız.");
+            console.log("Sizin sunucu katmanına DownloadSignedFileFromOnaylarimApi isteği gönderilemedi.", error);
         });
 }
 </script>
