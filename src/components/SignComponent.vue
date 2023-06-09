@@ -11,6 +11,8 @@ const yourWebApiUrl = "https://localhost:7294";
 
 // Kullanıcıya gösterilen mesaj
 const waitString = ref("");
+// yapılan işlemler
+const logs = ref([] as Array<string>);
 // e-imza aracı durumu
 const localSignerMode = ref("");
 // kullanıcının seçtiği sertifika
@@ -31,6 +33,7 @@ const selectedSignatureType = ref(signatureTypes[0]);
 
 onMounted(() => {
     // sayfa ilk yüklendiğinde onaylarim API'den e-imza aracının güncel versiyon bilgisi alınır
+    logs.value = [] as Array<string>;
     GetSignerAppVersions();
 });
 
@@ -50,16 +53,21 @@ function GetSignerAppVersions() {
     // CORS hatası alacaktır. Ancak demo uygulamanın çalışmasına engel bir durum değildir.
     // ONAYLARIM on-Prem kurulduğunda, client uygulamadan gelen requestlere izin verilecek şekilde CORS ayarı yapılacaktır.
     // ONAYLARIM SaaS kullanıldığında, client uygulamadan gelen requestlere izin verilecek şekilde CORS ayarı yapılacaktır.
+    logs.value.push("e-İmza aracı son sürümü alınıyor.");
     axios
         .get("https://apitest.onaylarim.com/sign/GetSignerAppVersions")
         .then((result) => {
             if (result.data.error) {
-                console.log("Uygulama güncel sürümü alınırken hata oluştu. " + result.data.error);
+                logs.value.push("Uygulama güncel sürümü alınırken hata oluştu. Detaylar için console'a bakınız.");
+                console.log("Uygulama güncel sürümü alınırken hata oluştu.", result);
             } else {
                 getSignerAppVersionsResult.value = result.data.result as GetSignerAppVersionsResult;
+                logs.value.push("Uygulama güncel sürümü alındı. Detaylar için console'a bakınız.");
+                console.log("Uygulama güncel sürümü.", getSignerAppVersionsResult.value);
             }
         })
         .catch(async (error) => {
+            logs.value.push("Uygulama güncel sürümü alınırken hata oluştu. Detaylar için console'a bakınız.");
             console.log("Uygulama güncel sürümü alınırken hata oluştu. ", error);
         });
 }
@@ -71,9 +79,12 @@ function LocalSignerReset() {
     localSignerMode.value = "working";
     waitString.value = "";
     // reset fonkisyonu ile e-İmza aracına bağlanıp varsa takılı sertifikalar alınır. e-imza aracı reset fonksiyonu ile takılı sertifiları baştan aramaya başlar.
+    logs.value.push("e-İmza aracına RESET isteği gönderiliyor.");
     axios
         .get("https://localsigner.onaylarim.com:8099/reset")
         .then((result) => {
+            logs.value.push("e-İmza aracına RESET isteği döndü. Detaylar için console'a bakınız.");
+            console.log("e-İmza aracına RESET isteğ sonucu.", result);
             signerAppResetResult.value = result.data as SignerAppResetResult;
             // signerAppStatus açıklamaları definition'da bulunabilir
             if (signerAppResetResult.value.signerAppStatus === 1) {
@@ -120,18 +131,22 @@ function LocalSignerReset() {
         })
         .catch(async (error) => {
             if (error.response) {
+                logs.value.push("e-İmza aracına RESET isteği gönderilemedi. Detaylar için console'a bakınız.");
+                console.log("e-İmza aracına RESET isteği gönderilemedi.", error);
                 localSignerMode.value = "baglantiKurulamadı";
-                console.log("baglantiKurulamadı1", error);
             } else if (error.request) {
+                logs.value.push("e-İmza aracına RESET isteği gönderilemedi. Detaylar için console'a bakınız.");
+                console.log("e-İmza aracına RESET isteği gönderilemedi.", error);
                 localSignerMode.value = "baglantiKurulamadı";
-                console.log("baglantiKurulamadı2", error);
             } else {
                 localSignerMode.value = "baglantiKurulamadı";
+                logs.value.push("e-İmza aracına RESET isteği gönderilemedi. Detaylar için console'a bakınız.");
+                console.log("e-İmza aracına RESET isteği gönderilemedi.", error);
                 console.log("baglantiKurulamadı3", error);
             }
         })
         .finally(() => {
-            console.log("localSignerMode", localSignerMode.value);
+            logs.value.push("e-İmza aracına durumu: " + localSignerMode.value);
         });
 }
 
@@ -140,7 +155,10 @@ function Sign(certificate: CertificateInfo) {
     operationId.value = "";
     const createStateOnOnaylarimApiRequest = { certificate: certificate.data, signatureType: selectedSignatureType.value.id };
     waitString.value = "İmza işlemi hazırlanıyor.";
+    logs.value.push("Sizin sunucu katmanına CreateStateOnOnaylarimApi isteği gönderiliyor.");
     axios.post(yourWebApiUrl + "/Onaylarim/CreateStateOnOnaylarimApi", createStateOnOnaylarimApiRequest).then((createStateOnOnaylarimApiResponse) => {
+        logs.value.push("Sizin sunucu katmanına CreateStateOnOnaylarimApi isteği gönderildi. Detaylar için console'a bakınız.");
+        console.log("Sizin sunucu katmanına CreateStateOnOnaylarimApi isteği gönderildi.", createStateOnOnaylarimApiResponse);
         waitString.value = "İmza işlemi baştıldı.";
         const config = {
             headers: {
@@ -158,15 +176,20 @@ function Sign(certificate: CertificateInfo) {
             pin: certificate.pin,
         };
         // e-imza aracına e-imza atması için istekte bulunulur. Kartta bulunan sertifika ile imzalama işlemi bu adımda yapılır.
+        logs.value.push("e-İmza aracına SIGNSTEPTWO isteği gönderiliyor.");
         axios.post("https://localsigner.onaylarim.com:8099/signStepTwo", JSON.stringify(signStepTwoRequest), config).then((signStepTwoResponse) => {
-            waitString.value = "İmza işlemi gerçekleştiriliyor.";
             const signStepTwoResult = signStepTwoResponse.data as SignStepTwoResult;
             if (signStepTwoResult.error !== undefined && signStepTwoResult.error !== null) {
+                logs.value.push("e-İmza aracına SIGNSTEPTWO isteği hata döndü. Detaylar için console'a bakınız.");
+                console.log("e-İmza aracına SIGNSTEPTWO isteği sonucu.", signStepTwoResult);
                 waitString.value = "Hata oluştu. " + signStepTwoResult.error;
             } else {
                 if (signStepTwoResult.error) {
+                    logs.value.push("e-İmza aracına SIGNSTEPTWO isteği hata döndü. Detaylar için console'a bakınız.");
+                    console.log("e-İmza aracına SIGNSTEPTWO isteği sonucu.", signStepTwoResult);
                     waitString.value = "Hata oluştu. " + signStepTwoResult.error;
                 } else {
+                    logs.value.push("e-İmza aracına SIGNSTEPTWO isteği başarıyla tamamlandı.");
                     // e-imza son adım çalıştırılır. 2. adımda imzalanan veri API'ye gönderilir
                     const finishSignRequest = {
                         keyId: createStateOnOnaylarimApiResult.keyID,
@@ -175,12 +198,17 @@ function Sign(certificate: CertificateInfo) {
                         operationId: createStateOnOnaylarimApiResult.operationId,
                         signatureType: selectedSignatureType.value.id,
                     };
+                    logs.value.push("Sizin sunucu katmanına FinishSign isteği gönderiliyor.");
                     axios.post(yourWebApiUrl + "/Onaylarim/FinishSign", finishSignRequest).then((finishSignResponse) => {
+                        logs.value.push("Sizin sunucu katmanına FinishSign isteği gönderildi. Detaylar için console'a bakınız.");
+                        console.log("Sizin sunucu katmanına FinishSign isteği gönderildi.", createStateOnOnaylarimApiResponse);
                         const finishSignResult = finishSignResponse.data as FinishSignResult;
                         if (finishSignResult.isSuccess) {
+                            logs.value.push("Sizin sunucu katmanına FinishSign istiği sonucu: İşlem başarılı.");
                             waitString.value = "İmza işlemi tamamlandı.";
                             operationId.value = createStateOnOnaylarimApiResult.operationId;
                         } else {
+                            logs.value.push("Sizin sunucu katmanına FinishSign istiği sonucu: İşlem başarısız.");
                             waitString.value = "İmza işlemi tamamlanamadı.";
                         }
                     });
@@ -419,5 +447,11 @@ function DownloadFile() {
                 </div>
             </template>
         </CardComponent>
+
+        <div class="pt-4 border-t border-gray-200 text-xs" v-if="logs && logs.length > 0">
+            <p class="leading-6 text-sm font-medium">İşlemler</p>
+
+            <p v-for="(logItem, index) in logs" :key="index" class="">{{ logItem }}</p>
+        </div>
     </main>
 </template>
