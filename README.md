@@ -1,6 +1,12 @@
-# onaylarim-core-vue
+# Sample Porject for ONAYLARIM coreAPI
 
-This template should help get you started developing with Vue 3 in Vite.
+## Getting Started
+
+Download [Server Project](https://github.com/DanialHuckabee/CoreApiCustomerApi) for the server side.
+
+Update `yourWebApiUrl` variables in the code to the URL of server side project.
+
+`ONAYLARIM e-İmza Aracı` accepts requests from only approved URL's. So please send us your client side application's URL.
 
 ## Recommended IDE Setup
 
