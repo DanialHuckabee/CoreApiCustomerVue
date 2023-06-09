@@ -1,6 +1,6 @@
 # Sample Porject for ONAYLARIM coreAPI
 
-ONAYLARIM coreAPI için örnek istemci uygulamasıdır.
+ONAYLARIM coreAPI için örnek istemci (browser) uygulamasıdır.
 
 ![image](https://github.com/DanialHuckabee/CoreApiCustomerVue/assets/14294898/dc7c4193-7399-4c3d-b39f-291aeb1b8aef)
 
@@ -8,7 +8,7 @@ ONAYLARIM coreAPI için örnek istemci uygulamasıdır.
 
 Sunucu tarafı için [Sunucu Projesini](https://github.com/DanialHuckabee/CoreApiCustomerApi) indirin.
 
-Koddaki yourWebApiUrl değişkenlerini sunucu tarafı projesinin URL'sine güncelleyin.
+Koddaki `yourWebApiUrl` değişkenlerini sunucu tarafı projesinin URL'sine güncelleyin.
 
 ONAYLARIM e-İmza Aracı, yalnızca onaylanmış URL'lerden gelen istekleri kabul eder. Bu nedenle lütfen bize istemci tarafı uygulamanızın URL'sini gönderin.
 
