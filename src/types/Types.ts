@@ -107,6 +107,3 @@ export function HandleError(error: Error): string {
         return error.message;
     }
 }
-
-// Kendi ortamınızdaki server side projesinin URL'si ile değiştiriniz.
-export const yourWebApiUrl = "https://localhost:7294";

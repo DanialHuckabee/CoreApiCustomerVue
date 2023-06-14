@@ -4,12 +4,14 @@ import SignComponent from "./components/SignComponent.vue";
 import MobileSignComponent from "./components/MobileSignComponent.vue";
 import PdfConvertComponent from "./components/PdfConvertComponent.vue";
 import PdfAddLayers from "./components/PdfAddLayers.vue";
+import SettingsComponent from "./components/SettingsComponent.vue";
 
 const tabs = [
     { name: "e-İmza", tag: shallowRef(SignComponent) },
     { name: "Mobil İmza", tag: shallowRef(MobileSignComponent) },
     { name: "PDF Convert", tag: shallowRef(PdfConvertComponent) },
     { name: "PDF Add Layers", tag: shallowRef(PdfAddLayers) },
+    { name: "Settings", tag: shallowRef(SettingsComponent) },
 ];
 
 const selectedTab = ref(tabs[0]);

@@ -3,7 +3,8 @@ import { ref } from "@vue/runtime-core";
 import axios, { AxiosError } from "axios";
 import CardComponent from "./CardComponent.vue";
 import { DocumentTextIcon } from "@heroicons/vue/24/outline";
-import { HandleError, yourWebApiUrl } from "@/types/Types";
+import { HandleError } from "@/types/Types";
+import store from "@/types/Store";
 
 // Kullanıcıya gösterilen mesaj
 const waitString = ref("");
@@ -13,7 +14,7 @@ const logs = ref([] as Array<string>);
 function AddLayers() {
     logs.value.push("Sizin sunucu katmanına AddLayers isteği gönderiliyor.");
     axios
-        .get(yourWebApiUrl + "/Onaylarim/AddLayers", { responseType: "blob" })
+        .get(store.API_URL + "/Onaylarim/AddLayers", { responseType: "blob" })
         .then((e) => {
             logs.value.push("Sizin sunucu katmanına AddLayers isteği gönderildi. Detaylar için console'a bakınız.");
             console.log("Sizin sunucu katmanına AddLayers isteği gönderildi.", e);

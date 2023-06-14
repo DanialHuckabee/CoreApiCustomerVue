@@ -6,7 +6,8 @@ import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headless
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
 import { DevicePhoneMobileIcon } from "@heroicons/vue/24/outline";
 import CardComponent from "./CardComponent.vue";
-import { HandleError, type GetFingerPrintRequest, type MobileSignResult, yourWebApiUrl } from "@/types/Types";
+import { HandleError, type GetFingerPrintRequest, type MobileSignResult } from "@/types/Types";
+import store from "@/types/Store";
 
 // Kullanıcıya gösterilen mesaj
 const waitString = ref("");
@@ -60,7 +61,7 @@ function MobileSign() {
     logs.value.push("Sizin sunucu katmanına MobileSign isteği gönderiliyor.");
     // mobil imza işlemi yapılır
     axios
-        .post(yourWebApiUrl + "/Onaylarim/MobileSign", mobileSignRequest)
+        .post(store.API_URL + "/Onaylarim/MobileSign", mobileSignRequest)
         .then((mobileSignResponse) => {
             logs.value.push("Sizin sunucu katmanına MobileSign isteği gönderildi. Detaylar için console'a bakınız.");
             console.log("Sizin sunucu katmanına MobileSign isteği gönderildi.", mobileSignResponse);
@@ -78,7 +79,7 @@ function MobileSign() {
         });
     // mobil imza işlemi sürerken işleme ilişkin parmak izi değeri alınır
     axios
-        .post(yourWebApiUrl + "/Onaylarim/GetFingerPrint", { operationId: operationId.value } as GetFingerPrintRequest)
+        .post(store.API_URL + "/Onaylarim/GetFingerPrint", { operationId: operationId.value } as GetFingerPrintRequest)
         .then((getFingerResponse) => {
             console.log("getFingerResponse", getFingerResponse);
             fingerPrint.value = getFingerResponse.data.fingerPrint;
@@ -91,7 +92,7 @@ function MobileSign() {
 
 function DownloadFile() {
     axios
-        .get(yourWebApiUrl + "/Onaylarim/DownloadSignedFileFromOnaylarimApi?operationId=" + operationId.value, { responseType: "blob" })
+        .get(store.API_URL + "/Onaylarim/DownloadSignedFileFromOnaylarimApi?operationId=" + operationId.value, { responseType: "blob" })
         .then((e) => {
             if (e.data.error) {
                 waitString.value = "Hata oluştu. " + e.data.error;

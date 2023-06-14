@@ -3,7 +3,8 @@ import { ref } from "@vue/runtime-core";
 import { ArrowPathIcon } from "@heroicons/vue/24/outline";
 import axios, { AxiosError } from "axios";
 import CardComponent from "./CardComponent.vue";
-import { HandleError, yourWebApiUrl } from "@/types/Types";
+import { HandleError } from "@/types/Types";
+import store from "@/types/Store";
 
 // Kullanıcıya gösterilen mesaj
 const waitString = ref("");
@@ -13,7 +14,7 @@ const logs = ref([] as Array<string>);
 function Convert() {
     logs.value.push("Sizin sunucu katmanına ConvertToPdf isteği gönderiliyor.");
     axios
-        .get(yourWebApiUrl + "/Onaylarim/ConvertToPdf", { responseType: "blob" })
+        .get(store.API_URL + "/Onaylarim/ConvertToPdf", { responseType: "blob" })
         .then((e) => {
             logs.value.push("Sizin sunucu katmanına ConvertToPdf isteği gönderildi. Detaylar için console'a bakınız.");
             console.log("Sizin sunucu katmanına ConvertToPdf isteği gönderildi.", e);

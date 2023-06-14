@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { handleError, onMounted, ref } from "@vue/runtime-core";
-import axios, { AxiosError } from "axios";
+import { onMounted, ref } from "@vue/runtime-core";
+import axios from "axios";
 import { CpuChipIcon } from "@heroicons/vue/20/solid";
 import { ExclamationTriangleIcon, ComputerDesktopIcon, ArrowDownTrayIcon, ClockIcon, LockClosedIcon, CheckBadgeIcon, Cog6ToothIcon } from "@heroicons/vue/24/outline";
-import { type CertificateInfo, type GetSignerAppVersionsResult, type SignerAppPingResult, type SignerAppResetResult, type SignStepTwoResult, type CreateStateOnOnaylarimApiResult, type FinishSignResult, HandleError, yourWebApiUrl } from "../types/Types";
+import { type CertificateInfo, type GetSignerAppVersionsResult, type SignerAppPingResult, type SignerAppResetResult, type SignStepTwoResult, type CreateStateOnOnaylarimApiResult, type FinishSignResult, HandleError } from "../types/Types";
 import CardComponent from "./CardComponent.vue";
+import store from "@/types/Store";
 
 // Kullanıcıya gösterilen mesaj
 const waitString = ref("");
@@ -143,7 +144,7 @@ function Sign(certificate: CertificateInfo) {
     waitString.value = "İmza işlemi hazırlanıyor.";
     logs.value.push("Sizin sunucu katmanına CreateStateOnOnaylarimApi isteği gönderiliyor.");
     axios
-        .post(yourWebApiUrl + "/Onaylarim/CreateStateOnOnaylarimApi", createStateOnOnaylarimApiRequest)
+        .post(store.API_URL + "/Onaylarim/CreateStateOnOnaylarimApi", createStateOnOnaylarimApiRequest)
         .then((createStateOnOnaylarimApiResponse) => {
             logs.value.push("Sizin sunucu katmanına CreateStateOnOnaylarimApi isteği gönderildi. Detaylar için console'a bakınız.");
             console.log("Sizin sunucu katmanına CreateStateOnOnaylarimApi isteği gönderildi.", createStateOnOnaylarimApiResponse);
@@ -190,7 +191,7 @@ function Sign(certificate: CertificateInfo) {
                             };
                             logs.value.push("Sizin sunucu katmanına FinishSign isteği gönderiliyor.");
                             axios
-                                .post(yourWebApiUrl + "/Onaylarim/FinishSign", finishSignRequest)
+                                .post(store.API_URL + "/Onaylarim/FinishSign", finishSignRequest)
                                 .then((finishSignResponse) => {
                                     logs.value.push("Sizin sunucu katmanına FinishSign isteği gönderildi. Detaylar için console'a bakınız.");
                                     console.log("Sizin sunucu katmanına FinishSign isteği gönderildi.", createStateOnOnaylarimApiResponse);
@@ -224,7 +225,7 @@ function Sign(certificate: CertificateInfo) {
 
 function DownloadFile() {
     axios
-        .get(yourWebApiUrl + "/Onaylarim/DownloadSignedFileFromOnaylarimApi?operationId=" + operationId.value, { responseType: "blob" })
+        .get(store.API_URL + "/Onaylarim/DownloadSignedFileFromOnaylarimApi?operationId=" + operationId.value, { responseType: "blob" })
         .then((e) => {
             if (e.data.error) {
                 waitString.value = "Hata oluştu. " + e.data.error;

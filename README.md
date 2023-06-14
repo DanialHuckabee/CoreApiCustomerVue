@@ -8,7 +8,7 @@ ONAYLARIM coreAPI için örnek istemci (browser) uygulamasıdır.
 
 Sunucu tarafı için [Sunucu Projesini](https://github.com/DanialHuckabee/CoreApiCustomerApi) indirin.
 
-Koddaki `yourWebApiUrl` değişkenlerini sunucu tarafı projesinin URL'sine güncelleyin.
+Koddaki `API_URL` değişkenlerini sunucu tarafı projesinin URL'sine güncelleyin.
 
 ONAYLARIM e-İmza Aracı, yalnızca onaylanmış URL'lerden gelen istekleri kabul eder. Bu nedenle lütfen bize istemci tarafı uygulamanızın URL'sini gönderin.
 
@@ -23,8 +23,8 @@ TypeScript cannot handle type information for `.vue` imports by default, so we r
 If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
 
 1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
+    1. Run `Extensions: Show Built-in Extensions` from VSCode's command palette
+    2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
 2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
 
 ## Customize configuration
