@@ -1,5 +1,5 @@
 import { reactive } from "vue";
 
 export default reactive({
-    API_URL: "http://api.beamimza.com/",
+  API_URL: "https://primeapicustomerapi.onaylarim.com",
 });
