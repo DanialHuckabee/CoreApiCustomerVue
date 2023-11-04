@@ -13,7 +13,7 @@ import store from "@/types/Store";
 const waitString = ref("");
 // yapılan işlemler
 const logs = ref([] as Array<string>);
-// coreAPI'de kullanılacak tekil operasyon numarası
+// primeAPI'de kullanılacak tekil operasyon numarası
 const operationId = ref("");
 // imza atarken kullanılacak telefon numarası. 5334440099 şeklinde olmalıdır
 const phoneNumber = ref("");
@@ -145,9 +145,14 @@ function DownloadFile() {
                             <fieldset>
                                 <legend class="sr-only">Notification method</legend>
                                 <div class="space-y-4 sm:flex sm:items-center sm:space-x-10 sm:space-y-0">
-                                    <div v-for="signatureType in signatureTypes" :key="signatureType.id" class="flex items-center cursor-pointer">
-                                        <input :id="signatureType.id" name="notification-method" type="radio" :value="signatureType" v-model="selectedSignatureType" class="h-4 w-4 border-gray-300 text-yellow-600 focus:ring-yellow-600 cursor-pointer" />
-                                        <label :for="signatureType.id" class="ml-3 block text-sm font-medium leading-6 text-gray-900 cursor-pointer">{{ signatureType.title }}</label>
+                                    <div v-for="signatureType in signatureTypes" :key="signatureType.id"
+                                        class="flex items-center cursor-pointer">
+                                        <input :id="signatureType.id" name="notification-method" type="radio"
+                                            :value="signatureType" v-model="selectedSignatureType"
+                                            class="h-4 w-4 border-gray-300 text-yellow-600 focus:ring-yellow-600 cursor-pointer" />
+                                        <label :for="signatureType.id"
+                                            class="ml-3 block text-sm font-medium leading-6 text-gray-900 cursor-pointer">{{
+                                                signatureType.title }}</label>
                                     </div>
                                 </div>
                             </fieldset>
@@ -159,20 +164,27 @@ function DownloadFile() {
                             <Listbox as="div" v-model="selectedOperator" class="max-w-sm">
                                 <div class="relative mt-2">
                                     <ListboxButton
-                                        class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-600 sm:text-sm sm:leading-6"
-                                    >
+                                        class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-600 sm:text-sm sm:leading-6">
                                         <span class="block truncate">{{ selectedOperator.name }}</span>
                                         <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
                                         </span>
                                     </ListboxButton>
 
-                                    <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
-                                        <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                                            <ListboxOption as="template" v-for="gsmOperator in operators" :key="gsmOperator.id" :value="gsmOperator" v-slot="{ active, selectedOperator }">
-                                                <li :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']">
-                                                    <span :class="[selectedOperator ? 'font-semibold' : 'font-normal', 'block truncate']">{{ gsmOperator.name }}</span>
-                                                    <span v-if="selectedOperator" :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
+                                    <transition leave-active-class="transition ease-in duration-100"
+                                        leave-from-class="opacity-100" leave-to-class="opacity-0">
+                                        <ListboxOptions
+                                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                                            <ListboxOption as="template" v-for="gsmOperator in operators"
+                                                :key="gsmOperator.id" :value="gsmOperator"
+                                                v-slot="{ active, selectedOperator }">
+                                                <li
+                                                    :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']">
+                                                    <span
+                                                        :class="[selectedOperator ? 'font-semibold' : 'font-normal', 'block truncate']">{{
+                                                            gsmOperator.name }}</span>
+                                                    <span v-if="selectedOperator"
+                                                        :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
                                                         <CheckIcon class="h-5 w-5" aria-hidden="true" />
                                                     </span>
                                                 </li>
@@ -183,24 +195,16 @@ function DownloadFile() {
                             </Listbox>
 
                             <div class="mt-2 max-w-sm">
-                                <input
-                                    type="text"
-                                    name="phoneNumber"
-                                    id="phoneNumber"
-                                    v-model="phoneNumber"
+                                <input type="text" name="phoneNumber" id="phoneNumber" v-model="phoneNumber"
                                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-yellow-600 sm:text-sm sm:leading-6"
-                                    placeholder="5339992200"
-                                />
+                                    placeholder="5339992200" />
                             </div>
                         </div>
                     </div>
                     <div class="flex-grow"></div>
                     <div>
-                        <button
-                            @click="MobileSign()"
-                            type="button"
-                            class="rounded-md bg-orange-200 px-2 py-1.5 text-sm font-medium text-gray-900 hover:bg-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-800 focus:ring-offset-2 focus:ring-offset-orange-200"
-                        >
+                        <button @click="MobileSign()" type="button"
+                            class="rounded-md bg-orange-200 px-2 py-1.5 text-sm font-medium text-gray-900 hover:bg-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-800 focus:ring-offset-2 focus:ring-offset-orange-200">
                             İmzala
                         </button>
                     </div>
@@ -213,14 +217,15 @@ function DownloadFile() {
                 <div class="mt-4 pt-4 border-t border-gray-200" v-if="waitString">
                     <p class="max-w-2xl text-sm leading-6 text-gray-500">{{ waitString }}</p>
 
-                    <p v-if="isSuccess" @click="DownloadFile()" class="max-w-2xl text-sm leading-6 text-orange-500 hover:underline cursor-pointer">e-İmzalı dosyayı indir</p>
+                    <p v-if="isSuccess" @click="DownloadFile()"
+                        class="max-w-2xl text-sm leading-6 text-orange-500 hover:underline cursor-pointer">e-İmzalı dosyayı
+                        indir</p>
                 </div>
             </template>
         </CardComponent>
         <div class="pt-4 border-t border-gray-200 text-xs" v-if="logs && logs.length > 0">
             <p class="leading-6 text-sm font-medium">İşlemler</p>
 
-            <p v-for="(logItem, index) in logs" :key="index" class="">{{ logItem }}</p>
-        </div>
-    </main>
-</template>
+        <p v-for="(logItem, index) in logs" :key="index" class="">{{ logItem }}</p>
+    </div>
+</main></template>

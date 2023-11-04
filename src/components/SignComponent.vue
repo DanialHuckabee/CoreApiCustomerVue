@@ -19,7 +19,7 @@ const selectedCertificate = ref(null as CertificateInfo | null);
 const getSignerAppVersionsResult = ref({} as GetSignerAppVersionsResult);
 // e-imza aracına yapılan RESET adlı GET request'i sonrasında dönen değer
 const signerAppResetResult = ref(null as SignerAppResetResult | null);
-// coreAPI'de kullanılacak tekil operasyon numarası
+// primeAPI'de kullanılacak tekil operasyon numarası
 const operationId = ref("");
 // imza türleri
 const signatureTypes = [
