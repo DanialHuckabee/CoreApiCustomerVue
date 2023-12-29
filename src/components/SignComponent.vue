@@ -40,7 +40,7 @@ function OpenSignerApp() {
     try {
         window.location.href = 'onaylarimsignerapp:"start"';
         // e-imza aracına bağlanılmaya çalışılır
-        LocalSignerReset();
+        TryToConnect();
     } catch (err) {
         console.log("open signer app error.", err);
     }
@@ -70,26 +70,72 @@ function GetSignerAppVersions() {
         });
 }
 
+
+async function TryToConnect() {
+    const httpsTryIsOk = await LocalSignerPing(true);
+    if (httpsTryIsOk) {
+        // bilgisayarda e-imza aracı var, çalışıyor durumda ve https bağlantı yapılabildi
+        LocalSignerReset(true);
+    }
+    else {
+        // bilgisayarda e-imza aracı var, çalışmıyor
+        // bilgisayarda e-imza aracı var, çalışıyor ancak https bağlantı yapılamadı
+        const httpTryIsOk = await LocalSignerPing(false);
+        if (httpTryIsOk) {
+            // bilgisayarda e-imza aracı var, çalışıyor durumda ve http bağlantı yapılabildi
+            LocalSignerReset(false);
+        }
+        else {
+            // bilgisayarda e-imza aracı var, çalışmıyor
+            // bilgisayarda e-imza aracı var, çalışıyor ancak http bağlantı yapılamadı
+
+        }
+    }
+}
+
+
+// e-İmza aracına bağlanmaya çalışır. sertifikaları almaya çalışmadığı için bilgisayarda e-imza aracının çalışır durumda olup olmadığını anlamak için en hızlı yöntemdir.
+async function LocalSignerPing(useHttps: boolean): Promise<boolean> {
+    logs.value.push("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " PING isteği gönderiliyor.");
+    try {
+        const axiosResponse = await axios.get((useHttps ? 'https' : 'http') + "://localsigner.onaylarim.com:8099/ping", { timeout: 500 });
+        logs.value.push("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " PING isteği döndü. Detaylar için console'a bakınız.");
+        console.log("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " PING isteğ sonucu.", axiosResponse);
+        const signerAppPingResult = axiosResponse.data as SignerAppPingResult;
+        if (signerAppPingResult.error === undefined || signerAppPingResult.error === null || signerAppPingResult.error.length === 0) {
+            return true;
+        }
+        return false;
+    } catch (error: any) {
+        logs.value.push("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " PING isteği gönderilemedi. Mesaj: " + HandleError(error) + " Detaylar için console'a bakınız.");
+        console.log("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " PING isteği gönderilemedi.", error);
+        localSignerMode.value = "baglantiKurulamadı";
+        return false;
+    }
+}
+
+
+
 // e-İmza aracına bağlanıp varsa takılı sertifikalar alınır
-function LocalSignerReset() {
+function LocalSignerReset(useHttps: boolean) {
     signerAppResetResult.value = null;
     operationId.value = "";
     localSignerMode.value = "working";
     waitString.value = "";
     // reset fonkisyonu ile e-İmza aracına bağlanıp varsa takılı sertifikalar alınır. e-imza aracı reset fonksiyonu ile takılı sertifiları baştan aramaya başlar.
-    logs.value.push("e-İmza aracına RESET isteği gönderiliyor.");
+    logs.value.push("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " RESET isteği gönderiliyor. ");
     axios
-        .get("https://localsigner.onaylarim.com:8099/reset")
+        .get((useHttps ? 'https' : 'http') + "://localsigner.onaylarim.com:8099/reset")
         .then((result) => {
-            logs.value.push("e-İmza aracına RESET isteği döndü. Detaylar için console'a bakınız.");
-            console.log("e-İmza aracına RESET isteğ sonucu.", result);
+            logs.value.push("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " RESET isteği döndü. Detaylar için console'a bakınız.");
+            console.log("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " RESET isteğ sonucu.", result);
             signerAppResetResult.value = result.data as SignerAppResetResult;
             // signerAppStatus açıklamaları definition'da bulunabilir
             if (signerAppResetResult.value.signerAppStatus === 1) {
                 // e-imza aracı sertifikaları bulmaya çalışıyorsa arka arkaya en fazla 10 kere olacak şekilde tekrardan e-imza aracı durumu sorgulanır. reset fonksiyonundan farklı olarak takılı sertifikalar baştan aranmaz, sadece e-imza aracı durumunu döner
                 let counter = 0;
                 while (counter < 10) {
-                    axios.get("https://localsigner.onaylarim.com:8099/ping").then((result) => {
+                    axios.get((useHttps ? 'https' : 'http') + "://localsigner.onaylarim.com:8099/ping").then((result) => {
                         const signerAppPingResult = result.data as SignerAppPingResult;
                         // GettingSmartCards dışında bir değer dönerse while loop sonlandırılır
                         if (signerAppPingResult.signerAppStatus !== 1) {
@@ -128,12 +174,12 @@ function LocalSignerReset() {
             }
         })
         .catch((error) => {
-            logs.value.push("e-İmza aracına RESET isteği gönderilemedi. Mesaj: " + HandleError(error) + " Detaylar için console'a bakınız.");
-            console.log("e-İmza aracına RESET isteği gönderilemedi.", error);
+            logs.value.push("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " RESET isteği gönderilemedi. Mesaj: " + HandleError(error) + " Detaylar için console'a bakınız.");
+            console.log("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " RESET isteği gönderilemedi.", error);
             localSignerMode.value = "baglantiKurulamadı";
         })
         .finally(() => {
-            logs.value.push("e-İmza aracına durumu: " + localSignerMode.value);
+            logs.value.push("e-İmza aracına durumu " + (useHttps ? 'SSL' : 'HTTP') + " : " + localSignerMode.value);
         });
 }
 
@@ -286,7 +332,8 @@ function DownloadFile() {
                         </fieldset>
                         <div class="flex-grow"></div>
                         <div class="">
-                            <button @click="LocalSignerReset()" type="button"
+
+                            <button @click="TryToConnect()" type="button"
                                 class="rounded-md bg-orange-200 px-2 py-1.5 text-sm font-medium text-gray-900 hover:bg-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-800 focus:ring-offset-2 focus:ring-offset-orange-200">
                                 Başla
                             </button>
@@ -317,7 +364,7 @@ function DownloadFile() {
                 </div>
                 <div class="mt-4">
                     <div class="-mx-2 -my-1.5 flex space-x-3">
-                        <button @click="LocalSignerReset" type="button"
+                        <button @click="TryToConnect()" type="button"
                             class="rounded-md bg-orange-200 px-2 py-1.5 text-sm font-medium text-gray-900 hover:bg-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-800 focus:ring-offset-2 focus:ring-offset-orange-200">
                             Yenile
                         </button>
