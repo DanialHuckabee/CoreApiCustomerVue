@@ -218,9 +218,24 @@ function Sign(certificate: CertificateInfo) {
                 .then((signStepTwoResponse) => {
                     const signStepTwoResult = signStepTwoResponse.data as SignStepTwoResult;
                     if (signStepTwoResult.error !== undefined && signStepTwoResult.error !== null) {
-                        logs.value.push("e-İmza aracına SIGNSTEPTWO isteği hata döndü. Detaylar için console'a bakınız.");
-                        console.log("e-İmza aracına SIGNSTEPTWO isteği sonucu.", signStepTwoResult);
-                        waitString.value = "Hata oluştu. " + signStepTwoResult.error;
+
+                        if (signStepTwoResult.error.search('INCORRECT_PIN') >= 0) {
+                            logs.value.push("e-İmza aracına SIGNSTEPTWO isteği hata döndü. Detaylar için console'a bakınız.");
+                            console.log("e-İmza aracına SIGNSTEPTWO isteği sonucu.", signStepTwoResult);
+                            waitString.value = "Hata oluştu. " + 'e-İmza şifreniz yanlış.';
+                        }
+                        else if (signStepTwoResult.error.search('PIN_BLOCKED') >= 0) {
+                            logs.value.push("e-İmza aracına SIGNSTEPTWO isteği hata döndü. Detaylar için console'a bakınız.");
+                            console.log("e-İmza aracına SIGNSTEPTWO isteği sonucu.", signStepTwoResult);
+                            waitString.value = "Hata oluştu. " + 'e-İmza şifreniz blokeli.';
+                        }
+                        else {
+                            logs.value.push("e-İmza aracına SIGNSTEPTWO isteği hata döndü. Detaylar için console'a bakınız.");
+                            console.log("e-İmza aracına SIGNSTEPTWO isteği sonucu.", signStepTwoResult);
+                            waitString.value = "Hata oluştu. " + signStepTwoResult.error;
+                        }
+
+
                     } else {
                         if (signStepTwoResult.error) {
                             logs.value.push("e-İmza aracına SIGNSTEPTWO isteği hata döndü. Detaylar için console'a bakınız.");
