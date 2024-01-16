@@ -5,12 +5,14 @@ import MobileSignComponent from "./components/MobileSignComponent.vue";
 import PdfConvertComponent from "./components/PdfConvertComponent.vue";
 import PdfAddLayers from "./components/PdfAddLayers.vue";
 import SettingsComponent from "./components/SettingsComponent.vue";
+import PadesUpgradeComponent from "./components/PadesUpgradeComponent.vue";
 
 const tabs = [
     { name: "e-İmza", tag: shallowRef(SignComponent) },
     { name: "Mobil İmza", tag: shallowRef(MobileSignComponent) },
     { name: "PDF Convert", tag: shallowRef(PdfConvertComponent) },
     { name: "PDF Add Layers", tag: shallowRef(PdfAddLayers) },
+    { name: "PAdES Upgrade", tag: shallowRef(PadesUpgradeComponent) },
     { name: "Settings", tag: shallowRef(SettingsComponent) },
 ];
 
@@ -45,8 +47,7 @@ function selectTab(tab: any) {
                         <div v-for="tab in tabs" :key="tab.name" :class="[
                             tab.name === selectedTab.name ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 cursor-pointer',
                             'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium',
-                        ]" :aria-current="tab.name === selectedTab.name ? 'page' : undefined"
-                            @click="selectTab(tab)">
+                        ]" :aria-current="tab.name === selectedTab.name ? 'page' : undefined" @click="selectTab(tab)">
                             {{ tab.name }}
                         </div>
                     </nav>

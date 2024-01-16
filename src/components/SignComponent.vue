@@ -21,6 +21,8 @@ const getSignerAppVersionsResult = ref({} as GetSignerAppVersionsResult);
 const signerAppResetResult = ref(null as SignerAppResetResult | null);
 // primeAPI'de kullanılacak tekil operasyon numarası
 const operationId = ref("");
+// ONAYLARIM e-imza aracına başarıyla bağlanılan URL adresi
+const workingUrl = ref("");
 // imza türleri
 const signatureTypes = [
     { id: "pades", title: "Pades" },
@@ -72,22 +74,34 @@ function GetSignerAppVersions() {
 
 
 async function TryToConnect() {
-    const httpsTryIsOk = await LocalSignerPing(true);
+
+    const httpsTryIsOk = await LocalSignerPing(true, false);
     if (httpsTryIsOk) {
+
+        workingUrl.value = "https://localsigner.onaylarim.com:8099"
+
         // bilgisayarda e-imza aracı var, çalışıyor durumda ve https bağlantı yapılabildi
-        LocalSignerReset(true);
+        LocalSignerReset();
     }
     else {
         // bilgisayarda e-imza aracı var, çalışmıyor
         // bilgisayarda e-imza aracı var, çalışıyor ancak https bağlantı yapılamadı
-        const httpTryIsOk = await LocalSignerPing(false);
+        const httpTryIsOk = await LocalSignerPing(false, false);
         if (httpTryIsOk) {
+            workingUrl.value = "http://localsigner.onaylarim.com:8099"
             // bilgisayarda e-imza aracı var, çalışıyor durumda ve http bağlantı yapılabildi
-            LocalSignerReset(false);
+            LocalSignerReset();
         }
         else {
             // bilgisayarda e-imza aracı var, çalışmıyor
             // bilgisayarda e-imza aracı var, çalışıyor ancak http bağlantı yapılamadı
+
+            const httpTryWithLocalhostIsOk = await LocalSignerPing(false, true);
+            if (httpTryWithLocalhostIsOk) {
+                workingUrl.value = "http://localhost:8099"
+
+                LocalSignerReset();
+            }
 
         }
     }
@@ -95,10 +109,13 @@ async function TryToConnect() {
 
 
 // e-İmza aracına bağlanmaya çalışır. sertifikaları almaya çalışmadığı için bilgisayarda e-imza aracının çalışır durumda olup olmadığını anlamak için en hızlı yöntemdir.
-async function LocalSignerPing(useHttps: boolean): Promise<boolean> {
-    logs.value.push("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " PING isteği gönderiliyor.");
+async function LocalSignerPing(useHttps: boolean, useLocalhost: boolean): Promise<boolean> {
+    const url = (useHttps ? 'https' : 'http') + (useLocalhost ? "://localhost:8099/ping" : "://localsigner.onaylarim.com:8099/ping");
+
+    logs.value.push("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " PING isteği gönderiliyor. Url: " + url);
     try {
-        const axiosResponse = await axios.get((useHttps ? 'https' : 'http') + "://localsigner.onaylarim.com:8099/ping", { timeout: 500 });
+
+        const axiosResponse = await axios.get(url, { timeout: 500 });
         logs.value.push("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " PING isteği döndü. Detaylar için console'a bakınız.");
         console.log("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " PING isteğ sonucu.", axiosResponse);
         const signerAppPingResult = axiosResponse.data as SignerAppPingResult;
@@ -117,25 +134,25 @@ async function LocalSignerPing(useHttps: boolean): Promise<boolean> {
 
 
 // e-İmza aracına bağlanıp varsa takılı sertifikalar alınır
-function LocalSignerReset(useHttps: boolean) {
+function LocalSignerReset() {
     signerAppResetResult.value = null;
     operationId.value = "";
     localSignerMode.value = "working";
     waitString.value = "";
     // reset fonkisyonu ile e-İmza aracına bağlanıp varsa takılı sertifikalar alınır. e-imza aracı reset fonksiyonu ile takılı sertifiları baştan aramaya başlar.
-    logs.value.push("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " RESET isteği gönderiliyor. ");
+    logs.value.push("e-İmza aracına " + workingUrl.value + " RESET isteği gönderiliyor. ");
     axios
-        .get((useHttps ? 'https' : 'http') + "://localsigner.onaylarim.com:8099/reset")
+        .get(workingUrl.value + '/reset')
         .then((result) => {
-            logs.value.push("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " RESET isteği döndü. Detaylar için console'a bakınız.");
-            console.log("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " RESET isteğ sonucu.", result);
+            logs.value.push("e-İmza aracına " + workingUrl.value + " RESET isteği döndü. Detaylar için console'a bakınız.");
+            console.log("e-İmza aracına " + workingUrl.value + " RESET isteğ sonucu.", result);
             signerAppResetResult.value = result.data as SignerAppResetResult;
             // signerAppStatus açıklamaları definition'da bulunabilir
             if (signerAppResetResult.value.signerAppStatus === 1) {
                 // e-imza aracı sertifikaları bulmaya çalışıyorsa arka arkaya en fazla 10 kere olacak şekilde tekrardan e-imza aracı durumu sorgulanır. reset fonksiyonundan farklı olarak takılı sertifikalar baştan aranmaz, sadece e-imza aracı durumunu döner
                 let counter = 0;
                 while (counter < 10) {
-                    axios.get((useHttps ? 'https' : 'http') + "://localsigner.onaylarim.com:8099/ping").then((result) => {
+                    axios.get(workingUrl.value + '/ping').then((result) => {
                         const signerAppPingResult = result.data as SignerAppPingResult;
                         // GettingSmartCards dışında bir değer dönerse while loop sonlandırılır
                         if (signerAppPingResult.signerAppStatus !== 1) {
@@ -174,12 +191,12 @@ function LocalSignerReset(useHttps: boolean) {
             }
         })
         .catch((error) => {
-            logs.value.push("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " RESET isteği gönderilemedi. Mesaj: " + HandleError(error) + " Detaylar için console'a bakınız.");
-            console.log("e-İmza aracına " + (useHttps ? 'SSL' : 'HTTP') + " RESET isteği gönderilemedi.", error);
+            logs.value.push("e-İmza aracına " + workingUrl.value + " RESET isteği gönderilemedi. Mesaj: " + HandleError(error) + " Detaylar için console'a bakınız.");
+            console.log("e-İmza aracına " + workingUrl.value + " RESET isteği gönderilemedi.", error);
             localSignerMode.value = "baglantiKurulamadı";
         })
         .finally(() => {
-            logs.value.push("e-İmza aracına durumu " + (useHttps ? 'SSL' : 'HTTP') + " : " + localSignerMode.value);
+            logs.value.push("e-İmza aracına durumu " + workingUrl.value + " : " + localSignerMode.value);
         });
 }
 
@@ -214,7 +231,7 @@ function Sign(certificate: CertificateInfo) {
             // e-imza aracına e-imza atması için istekte bulunulur. Kartta bulunan sertifika ile imzalama işlemi bu adımda yapılır.
             logs.value.push("e-İmza aracına SIGNSTEPTWO isteği gönderiliyor.");
             axios
-                .post("https://localsigner.onaylarim.com:8099/signStepTwo", JSON.stringify(signStepTwoRequest), config)
+                .post(workingUrl.value + "/signStepTwo", JSON.stringify(signStepTwoRequest), config)
                 .then((signStepTwoResponse) => {
                     const signStepTwoResult = signStepTwoResponse.data as SignStepTwoResult;
                     if (signStepTwoResult.error !== undefined && signStepTwoResult.error !== null) {
