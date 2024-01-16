@@ -211,6 +211,7 @@ function Sign(certificate: CertificateInfo) {
         .then((createStateOnOnaylarimApiResponse) => {
             logs.value.push("Sizin sunucu katmanına CreateStateOnOnaylarimApi isteği gönderildi. Detaylar için console'a bakınız.");
             console.log("Sizin sunucu katmanına CreateStateOnOnaylarimApi isteği gönderildi.", createStateOnOnaylarimApiResponse);
+
             waitString.value = "İmza işlemi baştıldı.";
             const config = {
                 headers: {
@@ -220,6 +221,10 @@ function Sign(certificate: CertificateInfo) {
             const createStateOnOnaylarimApiResult = createStateOnOnaylarimApiResponse.data as CreateStateOnOnaylarimApiResult;
             console.log("createStateOnOnaylarimApiResult", createStateOnOnaylarimApiResult);
 
+            if (createStateOnOnaylarimApiResult.error !== undefined && createStateOnOnaylarimApiResult.error !== null && createStateOnOnaylarimApiResult.error.length > 0) {
+                logs.value.push("Sizin sunucu katmanına CreateStateOnOnaylarimApi isteği hata döndü. Hata: " + createStateOnOnaylarimApiResult.error);
+                return;
+            }
             const signStepTwoRequest = {
                 keyId: createStateOnOnaylarimApiResult.keyID,
                 keySecret: createStateOnOnaylarimApiResult.keySecret,
