@@ -6,6 +6,7 @@ import PdfConvertComponent from "./components/PdfConvertComponent.vue";
 import PdfAddLayers from "./components/PdfAddLayers.vue";
 import SettingsComponent from "./components/SettingsComponent.vue";
 import PadesUpgradeComponent from "./components/PadesUpgradeComponent.vue";
+import CadesUpgradeComponent from "./components/CadesUpgradeComponent.vue";
 
 const tabs = [
     { name: "e-İmza", tag: shallowRef(SignComponent) },
@@ -13,6 +14,7 @@ const tabs = [
     { name: "PDF Convert", tag: shallowRef(PdfConvertComponent) },
     { name: "PDF Add Layers", tag: shallowRef(PdfAddLayers) },
     { name: "PAdES Upgrade", tag: shallowRef(PadesUpgradeComponent) },
+    { name: "CAdES Upgrade", tag: shallowRef(CadesUpgradeComponent) },
     { name: "Settings", tag: shallowRef(SettingsComponent) },
 ];
 
