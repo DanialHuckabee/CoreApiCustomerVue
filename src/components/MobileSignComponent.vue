@@ -17,6 +17,8 @@ const logs = ref([] as Array<string>);
 const operationId = ref("");
 // imza atarken kullanılacak telefon numarası. 5334440099 şeklinde olmalıdır
 const phoneNumber = ref("");
+// imza atarken kullanılacak mobil hattın sahibi olan kişinin TC numarası. Eğer bu değer girilmez ise kontrol yapılmaz.
+const citizenshipNo = ref("");
 // kullanıcıya gösterilen mobil imza parmak izi değeri
 const fingerPrint = ref("");
 // işlemin başarıyla tamamlanıp tamamlanmadığını gösterir
@@ -56,7 +58,7 @@ function MobileSign() {
     operationId.value = uuidv4();
     fingerPrint.value = "";
 
-    const mobileSignRequest = { operationId: operationId.value, phoneNumber: phoneNumber.value, operator: selectedOperator.value.id, signatureType: selectedSignatureType.value.id };
+    const mobileSignRequest = { operationId: operationId.value, phoneNumber: phoneNumber.value, operator: selectedOperator.value.id, signatureType: selectedSignatureType.value.id, citizenshipNo: citizenshipNo.value };
     waitString.value = "İmza işlemi hazırlanıyor.";
     logs.value.push("Sizin sunucu katmanına MobileSign isteği gönderiliyor.");
     // mobil imza işlemi yapılır
@@ -199,6 +201,19 @@ function DownloadFile() {
                                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-yellow-600 sm:text-sm sm:leading-6"
                                     placeholder="5339992200" />
                             </div>
+
+                            <div class="mt-2 max-w-sm">
+                                <input type="text" name="citizenshipNo" id="citizenshipNo" v-model="citizenshipNo"
+                                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-yellow-600 sm:text-sm sm:leading-6"
+                                    placeholder="TC Kimlik numarası" />
+
+                            </div>
+
+                            <div class="mt-2 text-xs text-gray-600">TC kimlik numarası verilmesi durumunda, mobil imza
+                                sahibi ile burada
+                                girilen TC
+                                numarası kontrol edilir.</div>
+
                         </div>
                     </div>
                     <div class="flex-grow"></div>
@@ -226,6 +241,7 @@ function DownloadFile() {
         <div class="pt-4 border-t border-gray-200 text-xs" v-if="logs && logs.length > 0">
             <p class="leading-6 text-sm font-medium">İşlemler</p>
 
-        <p v-for="(logItem, index) in logs" :key="index" class="">{{ logItem }}</p>
-    </div>
-</main></template>
+            <p v-for="(logItem, index) in logs" :key="index" class="">{{ logItem }}</p>
+        </div>
+    </main>
+</template>
