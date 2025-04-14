@@ -27,6 +27,7 @@ const workingUrl = ref("");
 const signatureTypes = [
   { id: "pades", title: "Pades" },
   { id: "cades", title: "Cades" },
+  { id: "xades", title: "Xades" },
 ];
 // kullanıcının seçtiği imza türü
 const selectedSignatureType = ref(signatureTypes[0]);

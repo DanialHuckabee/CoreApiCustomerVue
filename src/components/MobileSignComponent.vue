@@ -38,6 +38,7 @@ const selectedOperator = ref(operators[0]);
 const signatureTypes = [
     { id: "pades", title: "Pades" },
     { id: "cades", title: "Cades" },
+    { id: "xades", title: "Xades" },
 ];
 
 // kullanıcının seçtiği imza türü
