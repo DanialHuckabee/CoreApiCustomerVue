@@ -3,7 +3,7 @@ import { onMounted, ref } from "@vue/runtime-core";
 import axios from "axios";
 import { CpuChipIcon } from "@heroicons/vue/20/solid";
 import { ExclamationTriangleIcon, ComputerDesktopIcon, ArrowDownTrayIcon, ClockIcon, LockClosedIcon, CheckBadgeIcon, Cog6ToothIcon } from "@heroicons/vue/24/outline";
-import { type CertificateInfo, type GetSignerAppVersionsResult, type SignerAppPingResult, type SignerAppResetResult, type SignStepTwoResult, type CreateStateOnOnaylarimApiResult, type FinishSignResult, HandleError } from "../types/Types";
+import { type CertificateInfo, type GetSignerAppVersionsResult, type SignerAppPingResult, type SignerAppResetResult, type SignStepTwoResult, type CreateStateOnOnaylarimApiResult, type FinishSignResult, HandleError, type CreateStateOnOnaylarimApiRequest } from "../types/Types";
 import CardComponent from "./CardComponent.vue";
 import store from "@/types/Store";
 
@@ -28,12 +28,16 @@ const signatureTypes = [
   { id: "pades", title: "Pades" },
   { id: "cades", title: "Cades" },
   { id: "xades", title: "Xades" },
+  
 ];
 // kullanıcının seçtiği imza türü
 const selectedSignatureType = ref(signatureTypes[0]);
 
 // Pades imza atılırken, İmza işlemi sonrası imzanın LTV'ye upgrade edilip edilmeyeceğini belirler. Belgede N imza olacaksa, 1, 2, 3 ... , N-1 inci imzalar için False, sadece son imza için True gönderilmelidir.
 const upgradeToLtv = ref(false);
+
+// XADES imza atarken Enveloped yerine Enveloping imza at
+const useEnvelopingSignature = ref(false);
 
 onMounted(() => {
   // sayfa ilk yüklendiğinde onaylarim API'den e-imza aracının güncel versiyon bilgisi alınır
@@ -197,7 +201,12 @@ function LocalSignerReset() {
 // imza işlemini gerçekleştiren fonksiyondur
 function Sign(certificate: CertificateInfo) {
   operationId.value = "";
-  const createStateOnOnaylarimApiRequest = { certificate: certificate.data, signatureType: selectedSignatureType.value.id };
+  const createStateOnOnaylarimApiRequest = { certificate: certificate.data, signatureType: selectedSignatureType.value.id } as CreateStateOnOnaylarimApiRequest;
+
+  if(useEnvelopingSignature.value===true){
+    createStateOnOnaylarimApiRequest.xmlSignatureType = 2;
+  }
+
   waitString.value = "İmza işlemi hazırlanıyor.";
   logs.value.push("Sizin sunucu katmanına CreateStateOnOnaylarimApi isteği gönderiliyor.");
   axios
@@ -357,6 +366,14 @@ function DownloadFile() {
                 </div>
                 <div class="ml-3 text-sm leading-6">
                   <label for="candidates" class="font-medium text-gray-500">LTV imza at</label>
+                </div>
+              </div>
+              <div class="relative flex items-start" v-if="selectedSignatureType.id === signatureTypes[2].id">
+                <div class="flex h-6 items-center">
+                  <input v-model="useEnvelopingSignature" id="useEnvelopingSignature" aria-describedby="useEnvelopingSignature-description" name="useEnvelopingSignature" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-yellow-600 focus:ring-yellow-600" />
+                </div>
+                <div class="ml-3 text-sm leading-6">
+                  <label for="useEnvelopingSignature" class="font-medium text-gray-500">Enveloping imza at</label>
                 </div>
               </div>
             </fieldset>

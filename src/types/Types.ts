@@ -52,6 +52,34 @@ export interface SignStepTwoResult {
   error: string;
 }
 
+export interface CreateStateOnOnaylarimApiRequest {
+  /**
+   * Son kullanıcı bilgisayarında bulunan e-İmza Aracı vasıtasıyla alınan, e-imza atarken kullanılacak sertifikadır
+   */
+  certificate: string;
+
+  /**
+   * Atılacak e-imza türüdür, değerler pades, xades ve cades olabilir
+   */
+  signatureType: string;
+
+  /**
+   * Enveloping:2, Enveloped:4. Değer verilmez ise 4, yani Enveloped imza atılır.
+   */
+  xmlSignatureType?: number;
+
+  /**
+   * Enveloping imza durumunda, bu özellik, zarf içinde yer alan nesnenin Encoding (kodlama) özniteliğini içerir. Default değeri http://www.w3.org/2000/09/xmldsig#base64
+   */
+  envelopingObjectEncoding?: string;
+
+  /**
+   * Enveloping imza durumunda, bu özellik, zarf içinde yer alan nesnenin MIME türü (MIME type) özniteliğini içerir. Default değeri application/pdf
+   */
+  envelopingObjectMimeType?: string;
+}
+
+
 export interface CreateStateOnOnaylarimApiResult {
   state: number;
   keyID: number;
