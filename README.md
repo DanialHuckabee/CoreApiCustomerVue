@@ -12,8 +12,6 @@ Koddaki `API_URL` değişkenlerini sunucu tarafı projesinin URL'sine güncelley
 
 ONAYLARIM e-İmza Aracı, yalnızca onaylanmış URL'lerden gelen istekleri kabul eder. Bu nedenle lütfen bize istemci tarafı uygulamanızın URL'sini gönderin.
 
-## TTT
-
 # e-İmza Aracı getstatus Metodu
 
 ## Genel Bakış
