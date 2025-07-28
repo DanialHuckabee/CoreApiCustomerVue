@@ -11,6 +11,7 @@ export interface SignerAppResetResult {
   signerAppStatusString: string;
   signerAppDllVersion: number;
   signerAppPlatform: string;
+
 }
 
 export interface CertificateInfo {
@@ -23,7 +24,8 @@ export interface CertificateInfo {
   data: string;
   pkcsLibrary: string;
   slot: number;
-  pin: string;
+  isFinancialSeal: boolean;
+  certificateIndex: number |null;
 }
 
 export interface SignerAppPingResult {
@@ -45,6 +47,16 @@ export interface GetSignerAppVersionsResult {
   signerAppWindowsUrl: string;
   signerAppLinuxUrl: string;
   signerAppMacUrl: string;
+}
+
+export interface WebToAvalonSignStepTwoRequest {
+    keyId: string;
+    keySecret: string;
+    state: string;
+    pkcsLibrary: string;
+    slot: number;
+    pin: string;
+    certificateIndex:number | null
 }
 
 export interface SignStepTwoResult {
@@ -81,9 +93,9 @@ export interface CreateStateOnOnaylarimApiRequest {
 
 
 export interface CreateStateOnOnaylarimApiResult {
-  state: number;
-  keyID: number;
-  keySecret: number;
+  state: string;
+  keyID: string;
+  keySecret: string;
   operationId: string;
   error: string;
 }

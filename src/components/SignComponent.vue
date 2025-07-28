@@ -3,7 +3,7 @@ import { onMounted, ref } from "@vue/runtime-core";
 import axios from "axios";
 import { CpuChipIcon } from "@heroicons/vue/20/solid";
 import { ExclamationTriangleIcon, ComputerDesktopIcon, ArrowDownTrayIcon, ClockIcon, LockClosedIcon, CheckBadgeIcon, Cog6ToothIcon } from "@heroicons/vue/24/outline";
-import { type CertificateInfo, type GetSignerAppVersionsResult, type SignerAppPingResult, type SignerAppResetResult, type SignStepTwoResult, type CreateStateOnOnaylarimApiResult, type FinishSignResult, HandleError, type CreateStateOnOnaylarimApiRequest } from "../types/Types";
+import { type CertificateInfo, type GetSignerAppVersionsResult, type SignerAppPingResult, type SignerAppResetResult, type SignStepTwoResult, type CreateStateOnOnaylarimApiResult, type FinishSignResult, HandleError, type CreateStateOnOnaylarimApiRequest, type WebToAvalonSignStepTwoRequest } from "../types/Types";
 import CardComponent from "./CardComponent.vue";
 import store from "@/types/Store";
 
@@ -38,6 +38,9 @@ const upgradeToLtv = ref(false);
 
 // XADES imza atarken Enveloped yerine Enveloping imza at
 const useEnvelopingSignature = ref(false);
+
+// Kullanıcının kart şifresi
+const userPin = ref("");
 
 onMounted(() => {
   // sayfa ilk yüklendiğinde onaylarim API'den e-imza aracının güncel versiyon bilgisi alınır
@@ -234,8 +237,9 @@ function Sign(certificate: CertificateInfo) {
         state: createStateOnOnaylarimApiResult.state,
         pkcsLibrary: certificate.pkcsLibrary,
         slot: certificate.slot,
-        pin: certificate.pin,
-      };
+        pin: userPin.value,
+        certificateIndex:certificate.certificateIndex
+      } as WebToAvalonSignStepTwoRequest;
       // e-imza aracına e-imza atması için istekte bulunulur. Kartta bulunan sertifika ile imzalama işlemi bu adımda yapılır.
       logs.value.push("e-İmza aracına SIGNSTEPTWO isteği gönderiliyor.");
       axios
@@ -491,7 +495,7 @@ function DownloadFile() {
                         <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                           <LockClosedIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
                         </div>
-                        <input type="password" name="email" id="email" v-model="certificate.pin" class="block w-full rounded-none rounded-l-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-yellow-600 sm:text-sm sm:leading-6" placeholder="PIN" />
+                        <input type="password" name="email" id="email" v-model="userPin" class="block w-full rounded-none rounded-l-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-yellow-600 sm:text-sm sm:leading-6" placeholder="PIN" />
                       </div>
                       <button @click="Sign(certificate)" type="button" class="relative -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
                         <CheckBadgeIcon class="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />
