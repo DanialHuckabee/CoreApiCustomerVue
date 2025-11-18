@@ -108,13 +108,102 @@ export interface GetFingerPrintRequest {
   operationId: string;
 }
 
-export interface MobileSignRequest {
+export interface MobileSignRequestV2 {
+  /**
+   * Her bir istek için tekil bir GUID değeri verilmelidir.
+   * Bu değer aynı e-imza işlemi ile ilgili olarak daha sonraki metodlarda kullanılır.
+   */
   operationId: string;
+
+  /**
+   * Atılacak e-imza türüdür. Değerler:
+   * - pades
+   * - xades
+   * - cades
+   */
+  signatureType: string;
+
+  /**
+   * İmza atarken kullanılacak mobil imzaya ait telefon numarasıdır.
+   * Örnek: 5446786666
+   */
+  phoneNumber: string;
+
+  /**
+   * Mobil imza telefon numarasının bağlı olduğu operatör.
+   * Örnek: TURKCELL, VODAFONE, AVEA
+   */
+  operator: string;
+
+  /**
+   * Mobil imza sahibi kişinin T.C. kimlik numarası.
+   * Verilirse sertifika içindeki TC ile kontrol yapılır.
+   */
+  citizenshipNo?: string | null;
+
+  /**
+   * Sadece CADES imzalar için.
+   * Null geçilirse BES türünde imza atılır.
+   */
+  signatureLevel?: SignatureLevelForCades | null;
+
+  /**
+   * Seri imza atılacaksa hedeflenecek imza yolu bilgisi.
+   * Örnekler:
+   * - "" (hiç imza yoksa)
+   * - "S0"
+   * - "S0:S0"
+   * Parallel imzada yok sayılır.
+   */
+  signaturePath?: string | null;
+
+  /**
+   * Türk e-imza profilleri: P1, P2, P3, P4
+   * Şu anda sadece P4 destekleniyor.
+   * Profil istenmiyorsa null geçilir.
+   */
+  signatureTurkishProfile: string | null;
+
+  /**
+   * Seri veya paralel imza atılacağını belirtir.
+   * Değerler: SERIAL, PARALLEL
+   * Boş geçilirse PARALLEL kabul edilir.
+   */
+  serialOrParallel: string;
 }
 
 export interface MobileSignResult {
   isSuccess: boolean;
   error: string;
+}
+
+export enum SignatureLevelForCades {
+  /** BES (Basic Electronic Signature) */
+  aslBES = 6,
+
+  /** EPES (Electronic Signature with an Explicit Policy) */
+  aslEPES = 7,
+
+  /** T (Timestamped) */
+  aslT = 8,
+
+  /** C (T with revocation references) */
+  aslC = 9,
+
+  /** X Type 1 (C with an ES-C timestamp, CAdES only) */
+  aslXType1 = 11,
+
+  /** X Type 2 (C with a CertsAndCRLs timestamp, CAdES only) */
+  aslXType2 = 12,
+
+  /** X-L Type 1 (C with revocation values and an ES-C timestamp, CAdES only) */
+  aslXLType1 = 14,
+
+  /** X-L Type 2 (C with revocation values and a CertsAndCRLs timestamp, CAdES only) */
+  aslXLType2 = 15,
+
+  /** A (archived) */
+  aslA = 16,
 }
 
 export function HandleError(error: Error): string {
