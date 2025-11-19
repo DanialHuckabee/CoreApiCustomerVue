@@ -3,7 +3,7 @@ import { ref } from "@vue/runtime-core";
 import { ArrowPathIcon } from "@heroicons/vue/24/outline";
 import axios, { AxiosError } from "axios";
 import CardComponent from "./CardComponent.vue";
-import { HandleError } from "@/types/Types";
+import { HandleError } from "@/types/HandleError";
 import store from "@/types/Store";
 
 // Kullanıcıya gösterilen mesaj

@@ -3,7 +3,9 @@ import { onMounted, ref } from "@vue/runtime-core";
 import axios from "axios";
 import { CpuChipIcon } from "@heroicons/vue/20/solid";
 import { ExclamationTriangleIcon, ComputerDesktopIcon, ArrowDownTrayIcon, ClockIcon, LockClosedIcon, CheckBadgeIcon, Cog6ToothIcon } from "@heroicons/vue/24/outline";
-import { type CertificateInfo, type GetSignerAppVersionsResult, type SignerAppPingResult, type SignerAppResetResult, type SignStepTwoResult, type CreateStateOnOnaylarimApiResult, type FinishSignResult, HandleError, type CreateStateOnOnaylarimApiRequest, type WebToAvalonSignStepTwoRequest } from "../types/Types";
+import {  type CreateStateOnOnaylarimApiResult, type FinishSignResult, type CreateStateOnOnaylarimApiRequest } from "../types/Types";
+import { type CertificateInfo, type GetSignerAppVersionsResult, type SignerAppPingResult, type SignerAppResetResult, type SignStepTwoResult,  type WebToAvalonSignStepTwoRequest } from "../types/AgentTypes";
+import { HandleError } from "../types/HandleError";
 import CardComponent from "./CardComponent.vue";
 import store from "@/types/Store";
 

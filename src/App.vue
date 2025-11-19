@@ -2,6 +2,7 @@
 import { ref, shallowRef } from "@vue/runtime-core";
 import SignComponent from "./components/SignComponent.vue";
 import MobileSignComponent from "./components/MobileSignComponent.vue";
+import MobileSignComponentV2 from "./components/MobileSignComponentV2.vue";
 import PdfConvertComponent from "./components/PdfConvertComponent.vue";
 import PdfAddLayers from "./components/PdfAddLayers.vue";
 import SettingsComponent from "./components/SettingsComponent.vue";
@@ -11,6 +12,7 @@ import CadesUpgradeComponent from "./components/CadesUpgradeComponent.vue";
 const tabs = [
     { name: "e-İmza", tag: shallowRef(SignComponent) },
     { name: "Mobil İmza", tag: shallowRef(MobileSignComponent) },
+    { name: "Mobil İmza V2", tag: shallowRef(MobileSignComponentV2) },
     { name: "PDF Convert", tag: shallowRef(PdfConvertComponent) },
     { name: "PDF Add Layers", tag: shallowRef(PdfAddLayers) },
     { name: "PAdES Upgrade", tag: shallowRef(PadesUpgradeComponent) },
@@ -56,7 +58,9 @@ function selectTab(tab: any) {
                 </div>
             </div>
 
-            <component :is="selectedTab.tag"></component>
+            <KeepAlive>
+                <component :is="selectedTab.tag"></component>
+            </KeepAlive>
         </div>
     </div>
 </template>

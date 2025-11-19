@@ -6,7 +6,8 @@ import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headless
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
 import { DevicePhoneMobileIcon } from "@heroicons/vue/24/outline";
 import CardComponent from "./CardComponent.vue";
-import { HandleError, SignatureLevelForCades, type GetFingerPrintRequest, type MobileSignRequestV2, type MobileSignResult } from "@/types/Types";
+import {  SignatureLevelForCades, type GetFingerPrintRequest, type MobileSignRequestV2, type MobilSignResult } from "@/types/Types";
+import {  HandleError } from "@/types/HandleError";
 import store from "@/types/Store";
 
 // Kullanıcıya gösterilen mesaj
@@ -68,7 +69,7 @@ function MobileSign() {
         .then((mobileSignResponse) => {
             logs.value.push("Sizin sunucu katmanına MobileSign isteği gönderildi. Detaylar için console'a bakınız.");
             console.log("Sizin sunucu katmanına MobileSign isteği gönderildi.", mobileSignResponse);
-            const mobileSignResult = mobileSignResponse.data as MobileSignResult;
+            const mobileSignResult = mobileSignResponse.data as MobilSignResult;
             isSuccess.value = mobileSignResult.isSuccess;
             if (mobileSignResult.error) {
                 waitString.value = "İmza işlemi tamamlanamadı. Hata: " + mobileSignResult.error;
@@ -93,54 +94,7 @@ function MobileSign() {
         });
 }
 
-function MobileSignV2() {
-    // Parmak izi değerinin alınması için mobil imza işlemi bitmeden operationId'nin bilinmesi gerekmektedir. Bu nedenle operationId client side'da oluşturulmuştur.
-    operationId.value = uuidv4();
-    fingerPrint.value = "";
 
-    const mobileSignRequest = {
-        operationId: operationId.value,
-        signatureType: selectedSignatureType.value.id,
-        phoneNumber: phoneNumber.value,
-        operator: selectedOperator.value.id,
-        citizenshipNo: citizenshipNo.value,
-        signatureLevel: SignatureLevelForCades.aslBES,
-        signaturePath: null,
-        signatureTurkishProfile: null,
-        serialOrParallel: "PARALLEL"
-    } as MobileSignRequestV2;
-    waitString.value = "İmza işlemi hazırlanıyor.";
-    logs.value.push("Sizin sunucu katmanına MobileSign isteği gönderiliyor.");
-    // mobil imza işlemi yapılır
-    axios
-        .post(store.API_URL + "/Onaylarim/MobileSignV2", mobileSignRequest)
-        .then((mobileSignResponse) => {
-            logs.value.push("Sizin sunucu katmanına MobileSign isteği gönderildi. Detaylar için console'a bakınız.");
-            console.log("Sizin sunucu katmanına MobileSign isteği gönderildi.", mobileSignResponse);
-            const mobileSignResult = mobileSignResponse.data as MobileSignResult;
-            isSuccess.value = mobileSignResult.isSuccess;
-            if (mobileSignResult.error) {
-                waitString.value = "İmza işlemi tamamlanamadı. Hata: " + mobileSignResult.error;
-            } else {
-                waitString.value = "İmza işlemi tamamlandı.";
-            }
-        })
-        .catch((error) => {
-            logs.value.push("Sizin sunucu katmanına MobileSign isteği gönderilemedi. Mesaj: " + HandleError(error) + " Detaylar için console'a bakınız.");
-            console.log("Sizin sunucu katmanına MobileSign isteği gönderilemedi.", error);
-        });
-    // mobil imza işlemi sürerken işleme ilişkin parmak izi değeri alınır
-    axios
-        .post(store.API_URL + "/Onaylarim/GetFingerPrint", { operationId: operationId.value } as GetFingerPrintRequest)
-        .then((getFingerResponse) => {
-            console.log("getFingerResponse", getFingerResponse);
-            fingerPrint.value = getFingerResponse.data.fingerPrint;
-        })
-        .catch((error) => {
-            logs.value.push("Sizin sunucu katmanına GetFingerPrint isteği gönderilemedi. Mesaj: " + HandleError(error) + " Detaylar için console'a bakınız.");
-            console.log("Sizin sunucu katmanına GetFingerPrint isteği gönderilemedi.", error);
-        });
-}
 
 function DownloadFile() {
     axios
@@ -273,10 +227,7 @@ function DownloadFile() {
                             class="rounded-md bg-orange-200 px-2 py-1.5 text-sm font-medium text-gray-900 hover:bg-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-800 focus:ring-offset-2 focus:ring-offset-orange-200">
                             İmzala
                         </button>
-                        <button @click="MobileSignV2()" type="button"
-                            class="rounded-md bg-orange-200 px-2 py-1.5 text-sm font-medium text-gray-900 hover:bg-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-800 focus:ring-offset-2 focus:ring-offset-orange-200">
-                            İmzala V2
-                        </button>
+                        
                     </div>
                 </div>
 

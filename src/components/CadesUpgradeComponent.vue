@@ -3,7 +3,7 @@ import { ref } from "@vue/runtime-core";
 import axios, { AxiosError } from "axios";
 import CardComponent from "./CardComponent.vue";
 import { DocumentTextIcon } from "@heroicons/vue/24/outline";
-import { HandleError } from "@/types/Types";
+import { HandleError } from "@/types/HandleError";
 import store from "@/types/Store";
 import { v4 as uuidv4 } from "uuid";
 
