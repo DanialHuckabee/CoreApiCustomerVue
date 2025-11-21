@@ -52,9 +52,23 @@ const isSerialOrParallelOptions = [
     { id: "PARALLEL", title: "Paralel" },
 ];
 
+const turkishProfileOptions = [
+    { id: "NONE", title: "Hiçbiri", value: null ,disabled: false },
+    { id: "P1", title: "P1", value: "P1" ,disabled: true },
+    { id: "P2", title: "P2", value: "P2" ,disabled: true },
+    { id: "P3", title: "P3", value: "P3" ,disabled: true },
+    { id: "P4", title: "P4", value: "P4" ,disabled: false },
+];
+
+// kullanıcının seçtiği imza profili
+const selectedTurkishProfile = ref(turkishProfileOptions[0]);
+
+// imza atarken kullanılacak imza yöntemi
 const selectedIsSerialOrParallelOption = ref(isSerialOrParallelOptions[0]);
 
+// pades imza seviyeleri
 const signatureLevelForPadesOptions = Object.values(SignatureLevelForPades).map(value => ({ id: value, name: value }));
+// cades imza seviyeleri
 const signatureLevelForCadesOptions = Object.values(SignatureLevelForCades).map(value => ({ id: value, name: value }));
 
 const selectedPadesSignatureLevel = ref(signatureLevelForPadesOptions[0]);
@@ -62,6 +76,7 @@ const selectedCadesSignatureLevel = ref(signatureLevelForCadesOptions[0]);
 const selectedFile = ref<File | null>(null);
 const selectedFileName = ref("");
 
+// imza atarken kullanılacak imza yolu
 const signaturePath = ref(null as string | null);
 
 function onFileSelected(event: Event) {
@@ -99,8 +114,12 @@ async function UploadFileToServer() {
             logs.value.push("Dosya sunucuya başarıyla yüklendi.");
             operationId.value = uploadResult.operationId;
             console.log("selectedSignatureType.value", selectedSignatureType.value);
+            signatureList.value = [];
             if (selectedSignatureType.value.id === "cades") {
                 GetSignatureListCades();
+            }
+            if (selectedSignatureType.value.id === "pades") {
+                GetSignatureListPades();
             }
         } else {
             const errorMessage = uploadResult?.error || "Dosya yüklemesi başarısız oldu.";
@@ -126,12 +145,31 @@ async function UploadFileToServer() {
 //     });
 // }
 
+function GetSignatureListPades() {
+    
+
+    waitString.value = "Pades imza listesi alınıyor.";
+    logs.value.push("Sizin sunucu katmanına GetSignatureListPades isteği gönderiliyor.");
+    // mobil imza işlemi yapılır
+    axios
+        .get(store.API_URL + "/Onaylarim/GetSignatureListPades?operationId=" + operationId.value)
+        .then((getSignatureListResponse) => {
+            logs.value.push("Sizin sunucu katmanına GetSignatureListPades isteği gönderildi. Detaylar için console'a bakınız.");
+            console.log("Sizin sunucu katmanına GetSignatureListPades isteği gönderildi.", getSignatureListResponse);
+            const getSignatureListResult = getSignatureListResponse.data as GetSignatureListResult;
+            signatureList.value = getSignatureListResult.signatures;
+            console.log("getSignatureListResult", getSignatureListResult);
+        })
+        .catch((error) => {
+            logs.value.push("Sizin sunucu katmanına GetSignatureListPades isteği gönderilemedi. Mesaj: " + HandleError(error) + " Detaylar için console'a bakınız.");
+            console.log("Sizin sunucu katmanına GetSignatureListPades isteği gönderilemedi.", error);
+        });
+
+
+}
+
 function GetSignatureListCades() {
-    // Parmak izi değerinin alınması için mobil imza işlemi bitmeden operationId'nin bilinmesi gerekmektedir. Bu nedenle operationId client side'da oluşturulmuştur.
-
-
-
-
+    
 
     waitString.value = "Cades imza listesi alınıyor.";
     logs.value.push("Sizin sunucu katmanına GetSignatureListCades isteği gönderiliyor.");
@@ -153,7 +191,7 @@ function GetSignatureListCades() {
 }
 
 function MobileSignV2() {
-    // Parmak izi değerinin alınması için mobil imza işlemi bitmeden operationId'nin bilinmesi gerekmektedir. Bu nedenle operationId client side'da oluşturulmuştur.
+    
 
     fingerPrint.value = "";
 
@@ -183,8 +221,9 @@ function MobileSignV2() {
         signatureLevelForCades: signatureLevelForCades,
         signatureLevelForPades: signatureLevelForPades,
         signaturePath: signaturePath.value,
-        signatureTurkishProfile: null,
-        serialOrParallel
+        signatureTurkishProfile: selectedTurkishProfile.value.value,
+        serialOrParallel,
+        isFirstSigner: signatureList.value.length === 0 ? true : false,
     } as MobileSignRequestV2;
     waitString.value = "İmza işlemi hazırlanıyor.";
     logs.value.push("Sizin sunucu katmanına MobileSign isteği gönderiliyor.");
@@ -434,6 +473,35 @@ function DownloadFile() {
                                     placeholder="5339992200" />
                             </div>
 
+                            
+                            <Listbox as="div" v-model="selectedTurkishProfile" class="max-w-sm mt-2">
+                                <ListboxLabel class="block text-sm/6 font-medium text-gray-900 dark:text-white">Turkish Profile</ListboxLabel>
+                                <div class="relative mt-0">
+                                    <ListboxButton
+                                        class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-600 sm:text-sm sm:leading-6">
+                                        <span class="block truncate">{{ selectedTurkishProfile.title }}</span>
+                                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                            <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
+                                        </span>
+                                    </ListboxButton>
+
+                                    <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                                        <ListboxOptions
+                                            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                                            <ListboxOption as="template" v-for="turkishProfile in turkishProfileOptions.filter(profile => !profile.disabled)" :key="turkishProfile.id" :value="turkishProfile" v-slot="{ active, selectedTurkishProfile }">
+                                                <li :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']" :disabled="turkishProfile.disabled">
+                                                    <span :class="[selectedTurkishProfile ? 'font-semibold' : 'font-normal', 'block truncate']">{{
+                                                        turkishProfile.title }}</span>
+                                                    <span v-if="selectedTurkishProfile" :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
+                                                        <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                                                    </span>
+                                                </li>
+                                            </ListboxOption>
+                                        </ListboxOptions>
+                                    </transition>
+                                </div>
+                            </Listbox>
+
                             <div class="mt-2 max-w-sm">
                                 <label for="citizenshipNo" class="block text-sm/6 font-medium text-gray-900 dark:text-white">TC Kimlik Numarası</label>
                                 <input type="text" name="citizenshipNo" id="citizenshipNo" v-model="citizenshipNo" maxlength="11"
@@ -446,6 +514,9 @@ function DownloadFile() {
                                 sahibi ile burada
                                 girilen TC
                                 numarası kontrol edilir.</div>
+
+
+                           
 
                         </div>
                     </div>
