@@ -5,7 +5,7 @@ defineProps<{
 </script>
 
 <template>
-    <div class="rounded-md bg-gray-50 p-4">
+    <div class="rounded-md bg-gray-50 p-4 border border-gray-200 shadow-md">
         <div class="flex">
             <div class="flex-shrink-0">
                 <div class="h-5 w-5 text-gray-400" aria-hidden="true">

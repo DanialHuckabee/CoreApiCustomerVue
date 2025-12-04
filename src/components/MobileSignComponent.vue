@@ -136,7 +136,7 @@ function DownloadFile() {
 </script>
 
 <template>
-    <main class="py-8 space-y-4">
+    <main class="space-y-4">
         <CardComponent title="Mobil İmza">
             <template v-slot:icon>
                 <DevicePhoneMobileIcon></DevicePhoneMobileIcon>

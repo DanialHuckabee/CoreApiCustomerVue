@@ -17,7 +17,7 @@ function Save() {
 </script>
 
 <template>
-    <main class="py-8 space-y-4">
+    <main class="space-y-4">
         <CardComponent title="Ayarlar">
             <template v-slot:icon>
                 <Cog6ToothIcon></Cog6ToothIcon>

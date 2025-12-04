@@ -3,8 +3,8 @@ import { onMounted, ref } from "@vue/runtime-core";
 import axios from "axios";
 import { CpuChipIcon } from "@heroicons/vue/20/solid";
 import { ExclamationTriangleIcon, ComputerDesktopIcon, ArrowDownTrayIcon, ClockIcon, LockClosedIcon, CheckBadgeIcon, Cog6ToothIcon } from "@heroicons/vue/24/outline";
-import {  type CreateStateOnOnaylarimApiResult, type FinishSignResult, type CreateStateOnOnaylarimApiRequest } from "../types/Types";
-import { type CertificateInfo, type GetSignerAppVersionsResult, type SignerAppPingResult, type SignerAppResetResult, type SignStepTwoResult,  type WebToAvalonSignStepTwoRequest } from "../types/AgentTypes";
+import { type CreateStateOnOnaylarimApiResult, type FinishSignResult, type CreateStateOnOnaylarimApiRequest } from "../types/Types";
+import { type CertificateInfo, type GetSignerAppVersionsResult, type SignerAppPingResult, type SignerAppResetResult, type SignStepTwoResult, type WebToAvalonSignStepTwoRequest } from "../types/AgentTypes";
 import { HandleError } from "../types/HandleError";
 import CardComponent from "./CardComponent.vue";
 import store from "@/types/Store";
@@ -30,7 +30,7 @@ const signatureTypes = [
   { id: "pades", title: "Pades" },
   { id: "cades", title: "Cades" },
   { id: "xades", title: "Xades" },
-  
+
 ];
 // kullanıcının seçtiği imza türü
 const selectedSignatureType = ref(signatureTypes[0]);
@@ -208,7 +208,7 @@ function Sign(certificate: CertificateInfo) {
   operationId.value = "";
   const createStateOnOnaylarimApiRequest = { certificate: certificate.data, signatureType: selectedSignatureType.value.id } as CreateStateOnOnaylarimApiRequest;
 
-  if(useEnvelopingSignature.value===true){
+  if (useEnvelopingSignature.value === true) {
     createStateOnOnaylarimApiRequest.xmlSignatureType = 2;
   }
 
@@ -240,7 +240,7 @@ function Sign(certificate: CertificateInfo) {
         pkcsLibrary: certificate.pkcsLibrary,
         slot: certificate.slot,
         pin: userPin.value,
-        certificateIndex:certificate.certificateIndex
+        certificateIndex: certificate.certificateIndex
       } as WebToAvalonSignStepTwoRequest;
       // e-imza aracına e-imza atması için istekte bulunulur. Kartta bulunan sertifika ile imzalama işlemi bu adımda yapılır.
       logs.value.push("e-İmza aracına SIGNSTEPTWO isteği gönderiliyor.");
@@ -346,52 +346,68 @@ function DownloadFile() {
 </script>
 
 <template>
-  <main class="py-8 space-y-4">
-    <div class="rounded-md bg-gray-50 p-4">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <Cog6ToothIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
-        </div>
-        <div class="ml-3 flex-grow">
-          <h3 class="text-sm font-medium text-gray-800">e-İmza Türü</h3>
-          <div class="mt-2 text-sm text-gray-700">
-            <p>Hangi türde e-imza atılmasını istiyorsanız seçiniz?</p>
-          </div>
-          <div class="mt-4 flex items-center">
-            <fieldset>
-              <legend class="sr-only">Notification method</legend>
-              <div class="space-y-4 sm:flex sm:items-center sm:space-x-10 sm:space-y-0">
-                <div v-for="signatureType in signatureTypes" :key="signatureType.id" class="flex items-center cursor-pointer">
-                  <input :id="signatureType.id" name="notification-method" type="radio" :value="signatureType" v-model="selectedSignatureType" class="h-4 w-4 border-gray-300 text-yellow-600 focus:ring-yellow-600 cursor-pointer" />
-                  <label :for="signatureType.id" class="ml-3 block text-sm font-medium leading-6 text-gray-900 cursor-pointer">{{ signatureType.title }}</label>
-                </div>
-              </div>
-              <div class="relative flex items-start" v-if="selectedSignatureType.id === signatureTypes[0].id">
-                <div class="flex h-6 items-center">
-                  <input v-model="upgradeToLtv" id="candidates" aria-describedby="candidates-description" name="candidates" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-yellow-600 focus:ring-yellow-600" />
-                </div>
-                <div class="ml-3 text-sm leading-6">
-                  <label for="candidates" class="font-medium text-gray-500">LTV imza at</label>
-                </div>
-              </div>
-              <div class="relative flex items-start" v-if="selectedSignatureType.id === signatureTypes[2].id">
-                <div class="flex h-6 items-center">
-                  <input v-model="useEnvelopingSignature" id="useEnvelopingSignature" aria-describedby="useEnvelopingSignature-description" name="useEnvelopingSignature" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-yellow-600 focus:ring-yellow-600" />
-                </div>
-                <div class="ml-3 text-sm leading-6">
-                  <label for="useEnvelopingSignature" class="font-medium text-gray-500">Enveloping imza at</label>
-                </div>
-              </div>
-            </fieldset>
+  <main class="space-y-4">
+   
 
-            <div class="flex-grow"></div>
-            <div class="">
-              <button @click="TryToConnect()" type="button" class="rounded-md bg-orange-200 px-2 py-1.5 text-sm font-medium text-gray-900 hover:bg-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-800 focus:ring-offset-2 focus:ring-offset-orange-200">Başla</button>
+    <CardComponent title="e-İmza Türü">
+      <template v-slot:icon>
+        <Cog6ToothIcon></Cog6ToothIcon>
+      </template>
+      <template v-slot:content>
+        <div class="flex items-end">
+          <div class="">
+            <div class="text-sm text-gray-700">
+              <p>Hangi türde e-imza atılmasını istiyorsanız seçiniz?</p>
+            </div>
+            <div class="mt-4 flex items-center">
+              <fieldset>
+                <legend class="sr-only">Notification method</legend>
+                <div class="space-y-4 sm:flex sm:items-center sm:space-x-10 sm:space-y-0">
+                  <div v-for="signatureType in signatureTypes" :key="signatureType.id"
+                    class="flex items-center cursor-pointer">
+                    <input :id="signatureType.id" name="notification-method" type="radio" :value="signatureType"
+                      v-model="selectedSignatureType"
+                      class="h-4 w-4 border-gray-300 text-yellow-600 focus:ring-yellow-600 cursor-pointer" />
+                    <label :for="signatureType.id"
+                      class="ml-3 block text-sm font-medium leading-6 text-gray-900 cursor-pointer">{{
+                        signatureType.title
+                      }}</label>
+                  </div>
+                </div>
+                <div class="relative flex items-start" v-if="selectedSignatureType.id === signatureTypes[0].id">
+                  <div class="flex h-6 items-center">
+                    <input v-model="upgradeToLtv" id="candidates" aria-describedby="candidates-description"
+                      name="candidates" type="checkbox"
+                      class="h-4 w-4 rounded border-gray-300 text-yellow-600 focus:ring-yellow-600" />
+                  </div>
+                  <div class="ml-3 text-sm leading-6">
+                    <label for="candidates" class="font-medium text-gray-500">LTV imza at</label>
+                  </div>
+                </div>
+                <div class="relative flex items-start" v-if="selectedSignatureType.id === signatureTypes[2].id">
+                  <div class="flex h-6 items-center">
+                    <input v-model="useEnvelopingSignature" id="useEnvelopingSignature"
+                      aria-describedby="useEnvelopingSignature-description" name="useEnvelopingSignature"
+                      type="checkbox" class="h-4 w-4 rounded border-gray-300 text-yellow-600 focus:ring-yellow-600" />
+                  </div>
+                  <div class="ml-3 text-sm leading-6">
+                    <label for="useEnvelopingSignature" class="font-medium text-gray-500">Enveloping imza at</label>
+                  </div>
+                </div>
+              </fieldset>
+
+
+
             </div>
           </div>
+          <div class="flex-grow"></div>
+          <div class="">
+            <button @click="TryToConnect()" type="button"
+              class="rounded-md bg-orange-200 px-2 py-1.5 text-sm font-medium text-gray-900 hover:bg-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-800 focus:ring-offset-2 focus:ring-offset-orange-200">Başla</button>
+          </div>
         </div>
-      </div>
-    </div>
+      </template>
+    </CardComponent>
 
     <CardComponent v-if="localSignerMode === 'working'" title="e-İmzalar aranıyor">
       <template v-slot:icon>
@@ -414,7 +430,8 @@ function DownloadFile() {
         </div>
         <div class="mt-4">
           <div class="-mx-2 -my-1.5 flex space-x-3">
-            <button @click="TryToConnect()" type="button" class="rounded-md bg-orange-200 px-2 py-1.5 text-sm font-medium text-gray-900 hover:bg-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-800 focus:ring-offset-2 focus:ring-offset-orange-200">Yenile</button>
+            <button @click="TryToConnect()" type="button"
+              class="rounded-md bg-orange-200 px-2 py-1.5 text-sm font-medium text-gray-900 hover:bg-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-800 focus:ring-offset-2 focus:ring-offset-orange-200">Yenile</button>
           </div>
         </div>
       </template>
@@ -431,7 +448,8 @@ function DownloadFile() {
           </div>
           <div class="mt-4">
             <div class="-mx-2 -my-1.5 flex space-x-3">
-              <button @click="OpenSignerApp" type="button" class="rounded-md bg-orange-200 px-2 py-1.5 text-sm font-medium text-gray-900 hover:bg-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-800 focus:ring-offset-2 focus:ring-offset-gray-200">Aç</button>
+              <button @click="OpenSignerApp" type="button"
+                class="rounded-md bg-orange-200 px-2 py-1.5 text-sm font-medium text-gray-900 hover:bg-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-800 focus:ring-offset-2 focus:ring-offset-gray-200">Aç</button>
             </div>
           </div>
         </template>
@@ -442,12 +460,17 @@ function DownloadFile() {
         </template>
         <template v-slot:content>
           <div class="mt-2 text-sm text-gray-700">
-            <p>e-İmza aracını bilgisayarınıza kurmak için aşağıdaki butonu kullanabilirsiniz. Kurulumu tamamladıktan sonra aşağıdaki yenile butonuna basabilirsiniz.</p>
+            <p>e-İmza aracını bilgisayarınıza kurmak için aşağıdaki butonu kullanabilirsiniz. Kurulumu tamamladıktan
+              sonra aşağıdaki yenile butonuna basabilirsiniz.</p>
           </div>
           <div class="mt-4">
             <div class="-mx-2 -my-1.5 flex space-x-3">
-              <a :href="getSignerAppVersionsResult.signerAppWindowsUrl" class="rounded-md bg-orange-200 px-2 py-1.5 text-sm font-medium text-gray-900 hover:bg-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-800 focus:ring-offset-2 focus:ring-offset-orange-200"> Windows </a>
-              <a :href="getSignerAppVersionsResult.signerAppMacUrl" class="rounded-md bg-orange-200 px-2 py-1.5 text-sm font-medium text-gray-900 hover:bg-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-800 focus:ring-offset-2 focus:ring-offset-orange-200"> Mac </a>
+              <a :href="getSignerAppVersionsResult.signerAppWindowsUrl"
+                class="rounded-md bg-orange-200 px-2 py-1.5 text-sm font-medium text-gray-900 hover:bg-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-800 focus:ring-offset-2 focus:ring-offset-orange-200">
+                Windows </a>
+              <a :href="getSignerAppVersionsResult.signerAppMacUrl"
+                class="rounded-md bg-orange-200 px-2 py-1.5 text-sm font-medium text-gray-900 hover:bg-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-800 focus:ring-offset-2 focus:ring-offset-orange-200">
+                Mac </a>
             </div>
           </div>
         </template>
@@ -461,9 +484,11 @@ function DownloadFile() {
       <template v-slot:content>
         <div class="flex flex-col space-y-4">
           <div class="text-sm text-gray-700">
-            <p>Bilgisayarınıza takılı e-imzalar aşağıda listelenmiştir. İşlem yapmak istediğiniz sertifika için PIN girip imzalama işlemi yapabilirsiniz.</p>
+            <p>Bilgisayarınıza takılı e-imzalar aşağıda listelenmiştir. İşlem yapmak istediğiniz sertifika için PIN
+              girip imzalama işlemi yapabilirsiniz.</p>
           </div>
-          <div v-if="signerAppResetResult?.certificates !== null && signerAppResetResult?.certificates.length === 0" class="border-t border-gray-200">
+          <div v-if="signerAppResetResult?.certificates !== null && signerAppResetResult?.certificates.length === 0"
+            class="border-t border-gray-200">
             <div class="px-4 sm:px-6">
               <dl>
                 <div class="px-4 py-6 sm:px-0 flex">
@@ -475,9 +500,12 @@ function DownloadFile() {
               </dl>
             </div>
           </div>
-          <div v-if="signerAppResetResult && signerAppResetResult.certificates !== null && signerAppResetResult.certificates.length > 0" class="border-t border-gray-200">
+          <div
+            v-if="signerAppResetResult && signerAppResetResult.certificates !== null && signerAppResetResult.certificates.length > 0"
+            class="border-t border-gray-200">
             <div class="px-4 sm:px-6">
-              <dl v-for="certificate in signerAppResetResult?.certificates" :key="certificate.id" class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4">
+              <dl v-for="certificate in signerAppResetResult?.certificates" :key="certificate.id"
+                class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4">
                 <div class="px-4 py-2 sm:py-6 sm:col-span-1 sm:px-0">
                   <dt class="text-sm font-medium leading-6 text-gray-900">Ad Soyad</dt>
                   <dd class="mt-1 text-sm leading-6 text-gray-700">{{ certificate.personFullname }}</dd>
@@ -497,9 +525,12 @@ function DownloadFile() {
                         <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                           <LockClosedIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
                         </div>
-                        <input type="password" name="email" id="email" v-model="userPin" class="block w-full rounded-none rounded-l-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-yellow-600 sm:text-sm sm:leading-6" placeholder="PIN" />
+                        <input type="password" name="email" id="email" v-model="userPin"
+                          class="block w-full rounded-none rounded-l-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-yellow-600 sm:text-sm sm:leading-6"
+                          placeholder="PIN" />
                       </div>
-                      <button @click="Sign(certificate)" type="button" class="relative -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                      <button @click="Sign(certificate)" type="button"
+                        class="relative -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
                         <CheckBadgeIcon class="-ml-0.5 h-5 w-5 text-gray-400" aria-hidden="true" />
                         İmzala
                       </button>
@@ -512,7 +543,9 @@ function DownloadFile() {
           <div class="pt-4 border-t border-gray-200" v-if="waitString">
             <p class="max-w-2xl text-sm leading-6 text-gray-500">{{ waitString }}</p>
 
-            <p v-if="operationId && operationId.length > 0" @click="DownloadFile()" class="max-w-2xl text-sm leading-6 text-orange-500 hover:underline cursor-pointer">e-İmzalı dosyayı indir</p>
+            <p v-if="operationId && operationId.length > 0" @click="DownloadFile()"
+              class="max-w-2xl text-sm leading-6 text-orange-500 hover:underline cursor-pointer">e-İmzalı dosyayı indir
+            </p>
           </div>
         </div>
       </template>

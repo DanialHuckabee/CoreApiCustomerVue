@@ -75,7 +75,7 @@ function DownloadFile(operationId: string) {
 </script>
 
 <template>
-  <main class="py-8 space-y-4">
+  <main class="space-y-4">
     <CardComponent title="Add Layers">
       <template v-slot:icon>
         <DocumentTextIcon></DocumentTextIcon>

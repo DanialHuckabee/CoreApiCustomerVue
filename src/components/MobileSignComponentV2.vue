@@ -75,12 +75,30 @@ const selectedIsSerialOrParallelOption = ref(isSerialOrParallelOptions[0]);
 // Xades imza atarken kullanılacak e-imza tür
 const selectedIsEnvelopingOrEnvelopedOption = ref(isEnvelopingOrEnvelopedOptions[0]);
 
-// pades imza seviyeleri
-const signatureLevelForPadesOptions = Object.values(SignatureLevelForPades).map(value => ({ id: value, name: value }));
-// cades imza seviyeleri
-const signatureLevelForCadesOptions = Object.values(SignatureLevelForCades).map(value => ({ id: value, name: value }));
 
-const signatureLevelForXadesOptions = Object.values(SignatureLevelForXades).map(value => ({ id: value, name: value }));
+// pades imza seviyeleri
+const signatureLevelForPadesOptions = Object.keys(SignatureLevelForPades).filter((key) => isNaN(Number(key))).map((key) => {
+    return {
+        label: key,
+        value: SignatureLevelForPades[key as keyof typeof SignatureLevelForPades]
+    };
+});
+
+// cades imza seviyeleri
+const signatureLevelForCadesOptions = Object.keys(SignatureLevelForCades).filter((key) => isNaN(Number(key))).map((key) => {
+    return {
+        label: key,
+        value: SignatureLevelForPades[key as keyof typeof SignatureLevelForPades]
+    };
+});
+
+// xades imza seviyeleri
+const signatureLevelForXadesOptions = Object.keys(SignatureLevelForXades).filter((key) => isNaN(Number(key))).map((key) => {
+    return {
+        label: key,
+        value: SignatureLevelForPades[key as keyof typeof SignatureLevelForPades]
+    };
+});
 
 const selectedPadesSignatureLevel = ref(signatureLevelForPadesOptions[0]);
 const selectedCadesSignatureLevel = ref(signatureLevelForCadesOptions[0]);
@@ -234,16 +252,18 @@ function MobileSignV2() {
 
     const signatureLevelForCades =
         selectedSignatureType.value.id === "cades"
-            ? (typeof selectedCadesSignatureLevel.value.id === "number"
-                ? selectedCadesSignatureLevel.value.id
-                : SignatureLevelForCades[selectedCadesSignatureLevel.value.id as keyof typeof SignatureLevelForCades])
+            ? selectedCadesSignatureLevel.value.value
             : null;
     const signatureLevelForPades =
         selectedSignatureType.value.id === "pades"
-            ? (typeof selectedPadesSignatureLevel.value.id === "number"
-                ? selectedPadesSignatureLevel.value.id
-                : SignatureLevelForPades[selectedPadesSignatureLevel.value.id as keyof typeof SignatureLevelForPades])
+            ? selectedPadesSignatureLevel.value.value
             : null;
+
+    const signatureLevelForXades =
+        selectedSignatureType.value.id === "xades"
+            ? selectedXadesSignatureLevel.value.value
+            : null;
+
     const serialOrParallel =
         selectedIsSerialOrParallelOption.value.id === "SERIAL" || selectedIsSerialOrParallelOption.value.id === "PARALLEL"
             ? selectedIsSerialOrParallelOption.value.id
@@ -262,6 +282,7 @@ function MobileSignV2() {
         citizenshipNo: citizenshipNo.value,
         signatureLevelForCades: signatureLevelForCades,
         signatureLevelForPades: signatureLevelForPades,
+        signatureLevelForXades:signatureLevelForXades,
         signaturePath: signaturePath.value,
         signatureTurkishProfile: selectedTurkishProfile.value.value,
         serialOrParallel,
@@ -341,7 +362,7 @@ function DownloadFile() {
 </script>
 
 <template>
-    <main class="py-8 space-y-4">
+    <main class="space-y-4">
         <CardComponent title="Mobil İmza V2">
             <template v-slot:icon>
                 <DevicePhoneMobileIcon></DevicePhoneMobileIcon>
@@ -376,7 +397,7 @@ function DownloadFile() {
                                     class="block text-sm/6 font-medium text-gray-900 dark:text-white">İmzalanacak
                                     Dosya</label>
                                 <div
-                                    class="mt-1 flex items-center gap-3 rounded-md border-0 bg-white py-1.5 pl-3 pr-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-yellow-600">
+                                    class="mt-1 flex items-center gap-3 rounded-md border-0  py-1.5 pl-0 pr-3 text-gray-900  ">
                                     <input id="uploadFile" name="uploadFile" type="file" class="sr-only"
                                         @change="onFileSelected" />
                                     <label for="uploadFile"
@@ -401,7 +422,7 @@ function DownloadFile() {
                                 <div class="relative mt-0">
                                     <ListboxButton
                                         class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-600 sm:text-sm sm:leading-6">
-                                        <span class="block truncate">{{ selectedPadesSignatureLevel.name }}</span>
+                                        <span class="block truncate">{{ selectedPadesSignatureLevel.label }}</span>
                                         <span
                                             class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -414,13 +435,13 @@ function DownloadFile() {
                                             class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
                                             <ListboxOption as="template"
                                                 v-for="padesSignatureLevel in signatureLevelForPadesOptions"
-                                                :key="padesSignatureLevel.id" :value="padesSignatureLevel"
+                                                :key="padesSignatureLevel.value" :value="padesSignatureLevel"
                                                 v-slot="{ active, selected }">
                                                 <li
                                                     :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']">
                                                     <span
                                                         :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{
-                                                            padesSignatureLevel.name }}</span>
+                                                            padesSignatureLevel.label }}</span>
                                                     <span v-if="selected"
                                                         :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
                                                         <CheckIcon class="h-5 w-5" aria-hidden="true" />
@@ -439,7 +460,7 @@ function DownloadFile() {
                                 <div class="relative mt-0">
                                     <ListboxButton
                                         class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-600 sm:text-sm sm:leading-6">
-                                        <span class="block truncate">{{ selectedCadesSignatureLevel.name }}</span>
+                                        <span class="block truncate">{{ selectedCadesSignatureLevel.label }}</span>
                                         <span
                                             class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -452,13 +473,13 @@ function DownloadFile() {
                                             class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
                                             <ListboxOption as="template"
                                                 v-for="cadesSignatureLevel in signatureLevelForCadesOptions"
-                                                :key="cadesSignatureLevel.id" :value="cadesSignatureLevel"
+                                                :key="cadesSignatureLevel.value" :value="cadesSignatureLevel"
                                                 v-slot="{ active, selected }">
                                                 <li
                                                     :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']">
                                                     <span
                                                         :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{
-                                                            cadesSignatureLevel.name }}</span>
+                                                            cadesSignatureLevel.label }}</span>
                                                     <span v-if="selected"
                                                         :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
                                                         <CheckIcon class="h-5 w-5" aria-hidden="true" />
@@ -477,7 +498,7 @@ function DownloadFile() {
                                 <div class="relative mt-0">
                                     <ListboxButton
                                         class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-600 sm:text-sm sm:leading-6">
-                                        <span class="block truncate">{{ selectedXadesSignatureLevel.name }}</span>
+                                        <span class="block truncate">{{ selectedXadesSignatureLevel.label }}</span>
                                         <span
                                             class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -490,13 +511,13 @@ function DownloadFile() {
                                             class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
                                             <ListboxOption as="template"
                                                 v-for="xadesSignatureLevel in signatureLevelForXadesOptions"
-                                                :key="xadesSignatureLevel.id" :value="xadesSignatureLevel"
+                                                :key="xadesSignatureLevel.value" :value="xadesSignatureLevel"
                                                 v-slot="{ active, selected }">
                                                 <li
                                                     :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']">
                                                     <span
                                                         :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{
-                                                            xadesSignatureLevel.name }}</span>
+                                                            xadesSignatureLevel.label }}</span>
                                                     <span v-if="selected"
                                                         :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
                                                         <CheckIcon class="h-5 w-5" aria-hidden="true" />
@@ -735,8 +756,9 @@ function DownloadFile() {
                             {{ signature.timestamped }}</p>
                         <p class="text-xs text-gray-500"><span class="font-bold text-gray-900">İmza Tarihi:</span> {{
                             signature.claimedSigningTime }}</p>
-                        <p class="text-xs text-gray-500" v-if="signature.xadesSignatureType"><span class="font-bold text-gray-900">Xades Türü:</span> {{
-                            signature.xadesSignatureType }}</p>
+                        <p class="text-xs text-gray-500" v-if="signature.xadesSignatureType"><span
+                                class="font-bold text-gray-900">Xades Türü:</span> {{
+                                    signature.xadesSignatureType }}</p>
                         <hr class="my-2 border-gray-200">
                     </div>
                 </div>

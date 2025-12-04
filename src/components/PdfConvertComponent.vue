@@ -51,7 +51,7 @@ function Convert() {
 </script>
 
 <template>
-    <main class="py-8 space-y-4">
+    <main class="space-y-4">
         <CardComponent title="Convert to PDF">
             <template v-slot:icon>
                 <ArrowPathIcon></ArrowPathIcon>
