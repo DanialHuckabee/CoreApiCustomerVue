@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, shallowRef } from "@vue/runtime-core";
 import SignComponent from "./components/SignComponent.vue";
+import SignComponentV2 from "./components/SignComponentV2.vue";
 import MobileSignComponent from "./components/MobileSignComponent.vue";
 import MobileSignComponentV2 from "./components/MobileSignComponentV2.vue";
 import PdfConvertComponent from "./components/PdfConvertComponent.vue";
 import PdfAddLayers from "./components/PdfAddLayers.vue";
+import PdfAddQrAndVerificationInfoV2 from "./components/PdfAddQrAndVerificationInfoV2.vue";
 import SettingsComponent from "./components/SettingsComponent.vue";
 import PadesUpgradeComponent from "./components/PadesUpgradeComponent.vue";
 import PadesUpgradeComponentV2 from "./components/PadesUpgradeComponentV2.vue";
@@ -12,10 +14,12 @@ import CadesUpgradeComponent from "./components/CadesUpgradeComponent.vue";
 
 const tabs = [
     { name: "e-İmza", tag: shallowRef(SignComponent) },
+    { name: "e-İmza V2", tag: shallowRef(SignComponentV2) },
     { name: "Mobil İmza", tag: shallowRef(MobileSignComponent) },
     { name: "Mobil İmza V2", tag: shallowRef(MobileSignComponentV2) },
     { name: "PDF Convert", tag: shallowRef(PdfConvertComponent) },
     { name: "PDF Add Layers", tag: shallowRef(PdfAddLayers) },
+    { name: "PDF Add Layers V2", tag: shallowRef(PdfAddQrAndVerificationInfoV2) },
     { name: "PAdES Upgrade", tag: shallowRef(PadesUpgradeComponent) },
     { name: "PAdES Upgrade V2", tag: shallowRef(PadesUpgradeComponentV2) },
     { name: "CAdES Upgrade", tag: shallowRef(CadesUpgradeComponent) },
@@ -30,7 +34,7 @@ function selectTab(tab: any) {
 </script>
 
 <template>
-    <div class="mx-auto max-w-5xl sm:px-6 lg:px-8 py-8">
+    <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 py-8">
         <div class="md:flex md:items-center md:justify-between sm:px-0 px-4">
             <div class="min-w-0 flex-1">
                 <h2 class="text-3xl font-thin leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">ONAYLARIM

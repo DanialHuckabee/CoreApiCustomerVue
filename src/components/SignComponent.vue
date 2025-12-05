@@ -347,8 +347,6 @@ function DownloadFile() {
 
 <template>
   <main class="space-y-4">
-   
-
     <CardComponent title="e-İmza Türü">
       <template v-slot:icon>
         <Cog6ToothIcon></Cog6ToothIcon>
