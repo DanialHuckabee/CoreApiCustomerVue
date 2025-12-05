@@ -25,7 +25,7 @@ const fingerPrint = ref("");
 // işlemin başarıyla tamamlanıp tamamlanmadığını gösterir
 const isSuccess = ref(false);
 // cades imza listesi
-const signatureList = ref([] as Array<GetSignatureListResultItem>);
+const signatureList = ref(null as Array<GetSignatureListResultItem> | null);
 // mobil imza için kullanılacak operatörler. Id değerinde yazan ifade API'ye gönderilir. Bu ifadeler değiştirilmemelidir.
 const operators = [
     { id: "TURKCELL", name: "Turkcell" },
@@ -144,7 +144,7 @@ async function UploadFileToServer() {
             logs.value.push("Dosya sunucuya başarıyla yüklendi.");
             operationId.value = uploadResult.operationId;
             console.log("selectedSignatureType.value", selectedSignatureType.value);
-            signatureList.value = [];
+            signatureList.value = null;
             if (selectedSignatureType.value.id === "cades") {
                 GetSignatureListCades();
             }
@@ -282,11 +282,11 @@ function MobileSignV2() {
         citizenshipNo: citizenshipNo.value,
         signatureLevelForCades: signatureLevelForCades,
         signatureLevelForPades: signatureLevelForPades,
-        signatureLevelForXades:signatureLevelForXades,
+        signatureLevelForXades: signatureLevelForXades,
         signaturePath: signaturePath.value,
         signatureTurkishProfile: selectedTurkishProfile.value.value,
         serialOrParallel,
-        isFirstSigner: signatureList.value.length === 0 ? true : false,
+        isFirstSigner: signatureList.value ===null || signatureList.value.length === 0 ? true : false,
         envelopingOrEnveloped
     } as MobileSignRequestV2;
     waitString.value = "İmza işlemi hazırlanıyor.";
@@ -373,18 +373,15 @@ function DownloadFile() {
                         <div class="text-sm text-gray-700">
                             <p>Hangi türde e-imza atılmasını istiyorsanız seçiniz?</p>
                         </div>
-                        <div class="mt-5 flex items-center">
+                        <div class="mt-1 flex items-center">
                             <fieldset>
                                 <legend class="sr-only">Notification method</legend>
                                 <div class="space-y-4 sm:flex sm:items-center sm:space-x-10 sm:space-y-0">
-                                    <div v-for="signatureType in signatureTypes" :key="signatureType.id"
-                                        class="flex items-center cursor-pointer">
-                                        <input :id="signatureType.id" name="notification-method" type="radio"
-                                            :value="signatureType" v-model="selectedSignatureType"
+                                    <div v-for="signatureType in signatureTypes" :key="signatureType.id" class="flex items-center cursor-pointer">
+                                        <input :id="signatureType.id" name="notification-method" type="radio" :value="signatureType" v-model="selectedSignatureType"
                                             class="h-4 w-4 border-gray-300 text-yellow-600 focus:ring-yellow-600 cursor-pointer" />
-                                        <label :for="signatureType.id"
-                                            class="ml-3 block text-sm font-medium leading-6 text-gray-900 cursor-pointer">{{
-                                                signatureType.title }}</label>
+                                        <label :for="signatureType.id" class="ml-3 block text-sm font-medium leading-6 text-gray-900 cursor-pointer">{{
+                                            signatureType.title }}</label>
                                     </div>
                                 </div>
                             </fieldset>
@@ -393,19 +390,15 @@ function DownloadFile() {
                         <div class="flex flex-col mt-2">
 
                             <div class="mt-2 max-w-sm">
-                                <label for="uploadFile"
-                                    class="block text-sm/6 font-medium text-gray-900 dark:text-white">İmzalanacak
+                                <label for="uploadFile" class="block text-sm/6 font-medium text-gray-900 dark:text-white">İmzalanacak
                                     Dosya</label>
-                                <div
-                                    class="mt-1 flex items-center gap-3 rounded-md border-0  py-1.5 pl-0 pr-3 text-gray-900  ">
-                                    <input id="uploadFile" name="uploadFile" type="file" class="sr-only"
-                                        @change="onFileSelected" />
+                                <div class="mt-1 flex items-center gap-3 rounded-md border-0  py-1.5 pl-0 pr-3 text-gray-900  ">
+                                    <input id="uploadFile" name="uploadFile" type="file" class="sr-only" @change="onFileSelected" />
                                     <label for="uploadFile"
                                         class="flex-shrink-0 rounded-md bg-yellow-600 px-3 py-1.5 text-sm font-medium text-white cursor-pointer hover:bg-yellow-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white">
                                         Dosya seç
                                     </label>
-                                    <span class="text-sm text-gray-500 truncate"
-                                        :class="{ 'text-gray-400': !selectedFileName }">
+                                    <span class="text-sm text-gray-500 truncate" :class="{ 'text-gray-400': !selectedFileName }">
                                         {{ selectedFileName || "Seçili dosya yok" }}
                                     </span>
 
@@ -415,35 +408,27 @@ function DownloadFile() {
 
 
 
-                            <Listbox as="div" v-model="selectedPadesSignatureLevel" class="max-w-sm mt-2"
-                                v-if="selectedSignatureType.id === 'pades'">
+                            <Listbox as="div" v-model="selectedPadesSignatureLevel" class="max-w-sm mt-2" v-if="selectedSignatureType.id === 'pades'">
                                 <ListboxLabel class="block text-sm/6 font-medium text-gray-900 dark:text-white">Pades
                                     İmza Seviyesi</ListboxLabel>
                                 <div class="relative mt-0">
                                     <ListboxButton
                                         class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-600 sm:text-sm sm:leading-6">
                                         <span class="block truncate">{{ selectedPadesSignatureLevel.label }}</span>
-                                        <span
-                                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
                                         </span>
                                     </ListboxButton>
 
-                                    <transition leave-active-class="transition ease-in duration-100"
-                                        leave-from-class="opacity-100" leave-to-class="opacity-0">
+                                    <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
                                         <ListboxOptions
                                             class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                                            <ListboxOption as="template"
-                                                v-for="padesSignatureLevel in signatureLevelForPadesOptions"
-                                                :key="padesSignatureLevel.value" :value="padesSignatureLevel"
+                                            <ListboxOption as="template" v-for="padesSignatureLevel in signatureLevelForPadesOptions" :key="padesSignatureLevel.value" :value="padesSignatureLevel"
                                                 v-slot="{ active, selected }">
-                                                <li
-                                                    :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']">
-                                                    <span
-                                                        :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{
-                                                            padesSignatureLevel.label }}</span>
-                                                    <span v-if="selected"
-                                                        :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
+                                                <li :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']">
+                                                    <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{
+                                                        padesSignatureLevel.label }}</span>
+                                                    <span v-if="selected" :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
                                                         <CheckIcon class="h-5 w-5" aria-hidden="true" />
                                                     </span>
                                                 </li>
@@ -453,35 +438,27 @@ function DownloadFile() {
                                 </div>
                             </Listbox>
 
-                            <Listbox as="div" v-model="selectedCadesSignatureLevel" class="max-w-sm mt-2"
-                                v-if="selectedSignatureType.id === 'cades'">
+                            <Listbox as="div" v-model="selectedCadesSignatureLevel" class="max-w-sm mt-2" v-if="selectedSignatureType.id === 'cades'">
                                 <ListboxLabel class="block text-sm/6 font-medium text-gray-900 dark:text-white">Cades
                                     İmza Seviyesi</ListboxLabel>
                                 <div class="relative mt-0">
                                     <ListboxButton
                                         class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-600 sm:text-sm sm:leading-6">
                                         <span class="block truncate">{{ selectedCadesSignatureLevel.label }}</span>
-                                        <span
-                                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
                                         </span>
                                     </ListboxButton>
 
-                                    <transition leave-active-class="transition ease-in duration-100"
-                                        leave-from-class="opacity-100" leave-to-class="opacity-0">
+                                    <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
                                         <ListboxOptions
                                             class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                                            <ListboxOption as="template"
-                                                v-for="cadesSignatureLevel in signatureLevelForCadesOptions"
-                                                :key="cadesSignatureLevel.value" :value="cadesSignatureLevel"
+                                            <ListboxOption as="template" v-for="cadesSignatureLevel in signatureLevelForCadesOptions" :key="cadesSignatureLevel.value" :value="cadesSignatureLevel"
                                                 v-slot="{ active, selected }">
-                                                <li
-                                                    :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']">
-                                                    <span
-                                                        :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{
-                                                            cadesSignatureLevel.label }}</span>
-                                                    <span v-if="selected"
-                                                        :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
+                                                <li :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']">
+                                                    <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{
+                                                        cadesSignatureLevel.label }}</span>
+                                                    <span v-if="selected" :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
                                                         <CheckIcon class="h-5 w-5" aria-hidden="true" />
                                                     </span>
                                                 </li>
@@ -491,35 +468,27 @@ function DownloadFile() {
                                 </div>
                             </Listbox>
 
-                            <Listbox as="div" v-model="selectedXadesSignatureLevel" class="max-w-sm mt-2"
-                                v-if="selectedSignatureType.id === 'xades'">
+                            <Listbox as="div" v-model="selectedXadesSignatureLevel" class="max-w-sm mt-2" v-if="selectedSignatureType.id === 'xades'">
                                 <ListboxLabel class="block text-sm/6 font-medium text-gray-900 dark:text-white">Xades
                                     İmza Seviyesi</ListboxLabel>
                                 <div class="relative mt-0">
                                     <ListboxButton
                                         class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-600 sm:text-sm sm:leading-6">
                                         <span class="block truncate">{{ selectedXadesSignatureLevel.label }}</span>
-                                        <span
-                                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
                                         </span>
                                     </ListboxButton>
 
-                                    <transition leave-active-class="transition ease-in duration-100"
-                                        leave-from-class="opacity-100" leave-to-class="opacity-0">
+                                    <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
                                         <ListboxOptions
                                             class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                                            <ListboxOption as="template"
-                                                v-for="xadesSignatureLevel in signatureLevelForXadesOptions"
-                                                :key="xadesSignatureLevel.value" :value="xadesSignatureLevel"
+                                            <ListboxOption as="template" v-for="xadesSignatureLevel in signatureLevelForXadesOptions" :key="xadesSignatureLevel.value" :value="xadesSignatureLevel"
                                                 v-slot="{ active, selected }">
-                                                <li
-                                                    :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']">
-                                                    <span
-                                                        :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{
-                                                            xadesSignatureLevel.label }}</span>
-                                                    <span v-if="selected"
-                                                        :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
+                                                <li :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']">
+                                                    <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{
+                                                        xadesSignatureLevel.label }}</span>
+                                                    <span v-if="selected" :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
                                                         <CheckIcon class="h-5 w-5" aria-hidden="true" />
                                                     </span>
                                                 </li>
@@ -529,36 +498,28 @@ function DownloadFile() {
                                 </div>
                             </Listbox>
 
-                            <Listbox as="div" v-model="selectedIsEnvelopingOrEnvelopedOption" class="max-w-sm mt-2"
-                                v-if="selectedSignatureType.id === 'xades'">
+                            <Listbox as="div" v-model="selectedIsEnvelopingOrEnvelopedOption" class="max-w-sm mt-2" v-if="selectedSignatureType.id === 'xades'">
                                 <ListboxLabel class="block text-sm/6 font-medium text-gray-900 dark:text-white">Xades
                                     İmza Türü</ListboxLabel>
                                 <div class="relative mt-0">
                                     <ListboxButton
                                         class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-600 sm:text-sm sm:leading-6">
                                         <span class="block truncate">{{ selectedIsEnvelopingOrEnvelopedOption.title
-                                        }}</span>
-                                        <span
-                                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                            }}</span>
+                                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
                                         </span>
                                     </ListboxButton>
 
-                                    <transition leave-active-class="transition ease-in duration-100"
-                                        leave-from-class="opacity-100" leave-to-class="opacity-0">
+                                    <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
                                         <ListboxOptions
                                             class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                                            <ListboxOption as="template"
-                                                v-for="isEnvelopingOrEnvelopedOption in isEnvelopingOrEnvelopedOptions"
-                                                :key="isEnvelopingOrEnvelopedOption.title"
+                                            <ListboxOption as="template" v-for="isEnvelopingOrEnvelopedOption in isEnvelopingOrEnvelopedOptions" :key="isEnvelopingOrEnvelopedOption.title"
                                                 :value="isEnvelopingOrEnvelopedOption" v-slot="{ active, selected }">
-                                                <li
-                                                    :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']">
-                                                    <span
-                                                        :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{
-                                                            isEnvelopingOrEnvelopedOption.title }}</span>
-                                                    <span v-if="selected"
-                                                        :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
+                                                <li :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']">
+                                                    <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{
+                                                        isEnvelopingOrEnvelopedOption.title }}</span>
+                                                    <span v-if="selected" :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
                                                         <CheckIcon class="h-5 w-5" aria-hidden="true" />
                                                     </span>
                                                 </li>
@@ -568,35 +529,27 @@ function DownloadFile() {
                                 </div>
                             </Listbox>
 
-                            <Listbox as="div" v-model="selectedIsSerialOrParallelOption" class="max-w-sm mt-2"
-                                v-if="selectedSignatureType.id === 'cades' || selectedSignatureType.id === 'xades'">
+                            <Listbox as="div" v-model="selectedIsSerialOrParallelOption" class="max-w-sm mt-2" v-if="selectedSignatureType.id === 'cades' || selectedSignatureType.id === 'xades'">
                                 <ListboxLabel class="block text-sm/6 font-medium text-gray-900 dark:text-white">İmza
                                     Metodu</ListboxLabel>
                                 <div class="relative mt-0">
                                     <ListboxButton
                                         class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-600 sm:text-sm sm:leading-6">
                                         <span class="block truncate">{{ selectedIsSerialOrParallelOption.title }}</span>
-                                        <span
-                                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
                                         </span>
                                     </ListboxButton>
 
-                                    <transition leave-active-class="transition ease-in duration-100"
-                                        leave-from-class="opacity-100" leave-to-class="opacity-0">
+                                    <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
                                         <ListboxOptions
                                             class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                                            <ListboxOption as="template"
-                                                v-for="isSerialOrParallelOption in isSerialOrParallelOptions"
-                                                :key="isSerialOrParallelOption.title" :value="isSerialOrParallelOption"
-                                                v-slot="{ active, selected }">
-                                                <li
-                                                    :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']">
-                                                    <span
-                                                        :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{
-                                                            isSerialOrParallelOption.title }}</span>
-                                                    <span v-if="selected"
-                                                        :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
+                                            <ListboxOption as="template" v-for="isSerialOrParallelOption in isSerialOrParallelOptions" :key="isSerialOrParallelOption.title"
+                                                :value="isSerialOrParallelOption" v-slot="{ active, selected }">
+                                                <li :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']">
+                                                    <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{
+                                                        isSerialOrParallelOption.title }}</span>
+                                                    <span v-if="selected" :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
                                                         <CheckIcon class="h-5 w-5" aria-hidden="true" />
                                                     </span>
                                                 </li>
@@ -609,9 +562,8 @@ function DownloadFile() {
 
 
                             <div class="mt-2 max-w-sm"
-                                v-if="(selectedSignatureType.id === 'cades' || selectedSignatureType.id === 'xades') && selectedIsSerialOrParallelOption.id === 'SERIAL' && signatureList.length > 0">
-                                <label for="signaturePath"
-                                    class="block text-sm/6 font-medium text-gray-900 dark:text-white">Üstüne İmza
+                                v-if="(selectedSignatureType.id === 'cades' || selectedSignatureType.id === 'xades') && selectedIsSerialOrParallelOption.id === 'SERIAL' && signatureList && signatureList.length > 0">
+                                <label for="signaturePath" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Üstüne İmza
                                     Atılacak İmza Adı</label>
                                 <input type="text" name="signaturePath" id="signaturePath" v-model="signaturePath"
                                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-yellow-600 sm:text-sm sm:leading-6"
@@ -625,26 +577,19 @@ function DownloadFile() {
                                     <ListboxButton
                                         class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-600 sm:text-sm sm:leading-6">
                                         <span class="block truncate">{{ selectedOperator.name }}</span>
-                                        <span
-                                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
                                         </span>
                                     </ListboxButton>
 
-                                    <transition leave-active-class="transition ease-in duration-100"
-                                        leave-from-class="opacity-100" leave-to-class="opacity-0">
+                                    <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
                                         <ListboxOptions
                                             class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                                            <ListboxOption as="template" v-for="gsmOperator in operators"
-                                                :key="gsmOperator.id" :value="gsmOperator"
-                                                v-slot="{ active, selectedOperator }">
-                                                <li
-                                                    :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']">
-                                                    <span
-                                                        :class="[selectedOperator ? 'font-semibold' : 'font-normal', 'block truncate']">{{
-                                                            gsmOperator.name }}</span>
-                                                    <span v-if="selectedOperator"
-                                                        :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
+                                            <ListboxOption as="template" v-for="gsmOperator in operators" :key="gsmOperator.id" :value="gsmOperator" v-slot="{ active, selectedOperator }">
+                                                <li :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']">
+                                                    <span :class="[selectedOperator ? 'font-semibold' : 'font-normal', 'block truncate']">{{
+                                                        gsmOperator.name }}</span>
+                                                    <span v-if="selectedOperator" :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
                                                         <CheckIcon class="h-5 w-5" aria-hidden="true" />
                                                     </span>
                                                 </li>
@@ -658,8 +603,7 @@ function DownloadFile() {
 
 
                             <div class="mt-2 max-w-sm">
-                                <label for="phoneNumber"
-                                    class="block text-sm/6 font-medium text-gray-900 dark:text-white">Mobil Telefon
+                                <label for="phoneNumber" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Mobil Telefon
                                     Numarası</label>
                                 <input type="text" name="phoneNumber" id="phoneNumber" v-model="phoneNumber"
                                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-yellow-600 sm:text-sm sm:leading-6"
@@ -674,27 +618,21 @@ function DownloadFile() {
                                     <ListboxButton
                                         class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-600 sm:text-sm sm:leading-6">
                                         <span class="block truncate">{{ selectedTurkishProfile.title }}</span>
-                                        <span
-                                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                             <ChevronUpDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
                                         </span>
                                     </ListboxButton>
 
-                                    <transition leave-active-class="transition ease-in duration-100"
-                                        leave-from-class="opacity-100" leave-to-class="opacity-0">
+                                    <transition leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100" leave-to-class="opacity-0">
                                         <ListboxOptions
                                             class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                                            <ListboxOption as="template"
-                                                v-for="turkishProfile in turkishProfileOptions.filter(profile => !profile.disabled)"
-                                                :key="turkishProfile.id" :value="turkishProfile"
-                                                v-slot="{ active, selectedTurkishProfile }">
+                                            <ListboxOption as="template" v-for="turkishProfile in turkishProfileOptions.filter(profile => !profile.disabled)" :key="turkishProfile.id"
+                                                :value="turkishProfile" v-slot="{ active, selectedTurkishProfile }">
                                                 <li :class="[active ? 'bg-yellow-600 text-white' : 'text-gray-900', 'relative cursor-default select-none py-2 pl-3 pr-9']"
                                                     :disabled="turkishProfile.disabled">
-                                                    <span
-                                                        :class="[selectedTurkishProfile ? 'font-semibold' : 'font-normal', 'block truncate']">{{
-                                                            turkishProfile.title }}</span>
-                                                    <span v-if="selectedTurkishProfile"
-                                                        :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
+                                                    <span :class="[selectedTurkishProfile ? 'font-semibold' : 'font-normal', 'block truncate']">{{
+                                                        turkishProfile.title }}</span>
+                                                    <span v-if="selectedTurkishProfile" :class="[active ? 'text-white' : 'text-yellow-600', 'absolute inset-y-0 right-0 flex items-center pr-4']">
                                                         <CheckIcon class="h-5 w-5" aria-hidden="true" />
                                                     </span>
                                                 </li>
@@ -705,11 +643,9 @@ function DownloadFile() {
                             </Listbox>
 
                             <div class="mt-2 max-w-sm">
-                                <label for="citizenshipNo"
-                                    class="block text-sm/6 font-medium text-gray-900 dark:text-white">TC Kimlik
+                                <label for="citizenshipNo" class="block text-sm/6 font-medium text-gray-900 dark:text-white">TC Kimlik
                                     Numarası</label>
-                                <input type="text" name="citizenshipNo" id="citizenshipNo" v-model="citizenshipNo"
-                                    maxlength="11"
+                                <input type="text" name="citizenshipNo" id="citizenshipNo" v-model="citizenshipNo" maxlength="11"
                                     class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-yellow-600 sm:text-sm sm:leading-6"
                                     placeholder="TC Kimlik numarası" />
 
@@ -740,7 +676,18 @@ function DownloadFile() {
 
                 </div>
 
-                <div class="mt-4 pt-4 border-t border-gray-200" id="signatureList">
+                <div class="mt-4 px-4 py-2 border-gray-200 border bg-white " id="signatureList">
+                    <label class="block text-sm font-medium text-gray-900 dark:text-white">Dosyadaki Önceki İmzalar</label>
+                    <div v-if="signatureList === null">
+                        <div class="text-sm text-gray-700">
+                            <p>Belge yüklenmedi.</p>
+                        </div>
+                    </div>
+                    <div v-else-if="signatureList && signatureList.length === 0">
+                        <div class="text-sm text-gray-700">
+                            <p>Belgede {{ selectedSignatureType.title }} türünde imza bulunmuyor.</p>
+                        </div>
+                    </div>
 
                     <div v-for="(signature, index) in signatureList" :key="signature.entityLabel" class="mb-4">
 
@@ -756,9 +703,8 @@ function DownloadFile() {
                             {{ signature.timestamped }}</p>
                         <p class="text-xs text-gray-500"><span class="font-bold text-gray-900">İmza Tarihi:</span> {{
                             signature.claimedSigningTime }}</p>
-                        <p class="text-xs text-gray-500" v-if="signature.xadesSignatureType"><span
-                                class="font-bold text-gray-900">Xades Türü:</span> {{
-                                    signature.xadesSignatureType }}</p>
+                        <p class="text-xs text-gray-500" v-if="signature.xadesSignatureType"><span class="font-bold text-gray-900">Xades Türü:</span> {{
+                            signature.xadesSignatureType }}</p>
                         <hr class="my-2 border-gray-200">
                     </div>
                 </div>
@@ -770,8 +716,7 @@ function DownloadFile() {
                 <div class="mt-4 pt-4 border-t border-gray-200" v-if="waitString">
                     <p class="max-w-2xl text-sm leading-6 text-gray-500">{{ waitString }}</p>
 
-                    <p v-if="isSuccess" @click="DownloadFile()"
-                        class="max-w-2xl text-sm leading-6 text-orange-500 hover:underline cursor-pointer">e-İmzalı
+                    <p v-if="isSuccess" @click="DownloadFile()" class="max-w-2xl text-sm leading-6 text-orange-500 hover:underline cursor-pointer">e-İmzalı
                         dosyayı
                         indir</p>
                 </div>

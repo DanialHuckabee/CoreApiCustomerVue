@@ -4,13 +4,13 @@ import axios, { AxiosError } from "axios";
 import { v4 as uuidv4 } from "uuid";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions, ListboxLabel } from "@headlessui/vue";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/vue/20/solid";
-import { DevicePhoneMobileIcon } from "@heroicons/vue/24/outline";
+import { Cog6ToothIcon } from "@heroicons/vue/24/outline";
 import { ExclamationTriangleIcon, ComputerDesktopIcon, ArrowDownTrayIcon, LockClosedIcon, CheckBadgeIcon } from "@heroicons/vue/24/outline";
 import CardComponent from "./CardComponent.vue";
-import { SignatureLevelForPades, SignatureLevelForCades, type UploadFileResult, type GetSignatureListResult, type GetSignatureListResultItem, SignatureLevelForXades } from "@/types/Types";
+import { SignatureLevelForPades, SignatureLevelForCades, type UploadFileResult, type GetSignatureListResult, type GetSignatureListResultItem, SignatureLevelForXades, type CreateStateOnOnaylarimApiForPadesRequestV2, type CreateStateOnOnaylarimApiResult, type FinishSignForPadesRequestV2, type FinishSignResult } from "@/types/Types";
 import { HandleError } from "@/types/HandleError";
 import store from "@/types/Store";
-import type { CertificateInfo, GetSignerAppVersionsResult, SignerAppPingResult, SignerAppResetResult } from "@/types/AgentTypes";
+import type { CertificateInfo, GetSignerAppVersionsResult, SignStepTwoResult, SignerAppPingResult, SignerAppResetResult, WebToAvalonSignStepTwoRequest } from "@/types/AgentTypes";
 
 // Kullanıcıya gösterilen mesaj
 const waitString = ref("");
@@ -21,7 +21,7 @@ const operationId = ref("");
 // işlemin başarıyla tamamlanıp tamamlanmadığını gösterir
 const isSuccess = ref(false);
 // cades imza listesi
-const signatureList = ref([] as Array<GetSignatureListResultItem>);
+const signatureList = ref(null as Array<GetSignatureListResultItem> | null);
 // e-imza aracı durumu
 const localSignerMode = ref("");
 // kullanıcının seçtiği sertifika
@@ -258,6 +258,17 @@ function LocalSignerReset() {
     });
 }
 
+// kullanıcı AÇ butonuna bastığında e-imza aracı açılır
+function OpenSignerApp() {
+  try {
+    window.location.href = 'onaylarimsignerapp:"start"';
+    // e-imza aracına bağlanılmaya çalışılır
+    TryToConnect();
+  } catch (err) {
+    console.log("open signer app error.", err);
+  }
+}
+
 function onFileSelected(event: Event) {
   const target = event.target as HTMLInputElement;
   if (target?.files && target.files.length > 0) {
@@ -293,7 +304,7 @@ async function UploadFileToServer() {
       logs.value.push("Dosya sunucuya başarıyla yüklendi.");
       operationId.value = uploadResult.operationId;
       console.log("selectedSignatureType.value", selectedSignatureType.value);
-      signatureList.value = [];
+      signatureList.value = null;
       if (selectedSignatureType.value.id === "cades") {
         GetSignatureListCades();
       }
@@ -315,6 +326,119 @@ async function UploadFileToServer() {
     logs.value.push("Dosya yüklemesi başarısız oldu. " + errorMessage);
     console.error("UploadFile error", error);
   }
+}
+
+// imza işlemini gerçekleştiren fonksiyondur
+function Sign(certificate: CertificateInfo) {
+  if (selectedSignatureType.value.id === "pades") {
+    SignPadesV2(certificate);
+  }
+}
+
+// Pades imza işlemini gerçekleştiren fonksiyondur
+function SignPadesV2(certificate: CertificateInfo) {
+  operationId.value = "";
+  const createStateOnOnaylarimApiForPadesRequestV2 = { certificate: certificate.data, signatureLevel: selectedPadesSignatureLevel.value.value } as CreateStateOnOnaylarimApiForPadesRequestV2;
+
+
+
+  waitString.value = "İmza işlemi hazırlanıyor.";
+  logs.value.push("Sizin sunucu katmanına CreateStateOnOnaylarimApiForPadesV2 isteği gönderiliyor.");
+  axios
+    .post(store.API_URL + "/Onaylarim/CreateStateOnOnaylarimApiForPadesV2", createStateOnOnaylarimApiForPadesRequestV2)
+    .then((createStateOnOnaylarimApiForPadesResponse) => {
+      logs.value.push("Sizin sunucu katmanına CreateStateOnOnaylarimApiForPadesV2 isteği gönderildi. Detaylar için console'a bakınız.");
+      console.log("Sizin sunucu katmanına CreateStateOnOnaylarimApiForPadesV2 isteği gönderildi.", createStateOnOnaylarimApiForPadesResponse);
+
+      waitString.value = "İmza işlemi baştıldı.";
+      const config = {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      };
+      const createStateOnOnaylarimApiResult = createStateOnOnaylarimApiForPadesResponse.data as CreateStateOnOnaylarimApiResult;
+      console.log("createStateOnOnaylarimApiResult", createStateOnOnaylarimApiResult);
+
+      if (createStateOnOnaylarimApiResult.error !== undefined && createStateOnOnaylarimApiResult.error !== null && createStateOnOnaylarimApiResult.error.length > 0) {
+        logs.value.push("Sizin sunucu katmanına CreateStateOnOnaylarimApiForPadesV2 isteği hata döndü. Hata: " + createStateOnOnaylarimApiResult.error);
+        return;
+      }
+      const signStepTwoRequest = {
+        keyId: createStateOnOnaylarimApiResult.keyID,
+        keySecret: createStateOnOnaylarimApiResult.keySecret,
+        state: createStateOnOnaylarimApiResult.state,
+        pkcsLibrary: certificate.pkcsLibrary,
+        slot: certificate.slot,
+        pin: userPin.value,
+        certificateIndex: certificate.certificateIndex
+      } as WebToAvalonSignStepTwoRequest;
+      // e-imza aracına e-imza atması için istekte bulunulur. Kartta bulunan sertifika ile imzalama işlemi bu adımda yapılır.
+      logs.value.push("e-İmza aracına SIGNSTEPTWO isteği gönderiliyor.");
+      axios
+        .post(workingUrl.value + "/signStepTwo", JSON.stringify(signStepTwoRequest), config)
+        .then((signStepTwoResponse) => {
+          const signStepTwoResult = signStepTwoResponse.data as SignStepTwoResult;
+          if (signStepTwoResult.error !== undefined && signStepTwoResult.error !== null) {
+            if (signStepTwoResult.error.search("INCORRECT_PIN") >= 0) {
+              logs.value.push("e-İmza aracına SIGNSTEPTWO isteği hata döndü. Detaylar için console'a bakınız.");
+              console.log("e-İmza aracına SIGNSTEPTWO isteği sonucu.", signStepTwoResult);
+              waitString.value = "Hata oluştu. " + "e-İmza şifreniz yanlış.";
+            } else if (signStepTwoResult.error.search("PIN_BLOCKED") >= 0) {
+              logs.value.push("e-İmza aracına SIGNSTEPTWO isteği hata döndü. Detaylar için console'a bakınız.");
+              console.log("e-İmza aracına SIGNSTEPTWO isteği sonucu.", signStepTwoResult);
+              waitString.value = "Hata oluştu. " + "e-İmza şifreniz blokeli.";
+            } else {
+              logs.value.push("e-İmza aracına SIGNSTEPTWO isteği hata döndü. Detaylar için console'a bakınız.");
+              console.log("e-İmza aracına SIGNSTEPTWO isteği sonucu.", signStepTwoResult);
+              waitString.value = "Hata oluştu. " + signStepTwoResult.error;
+            }
+          } else {
+            if (signStepTwoResult.error) {
+              logs.value.push("e-İmza aracına SIGNSTEPTWO isteği hata döndü. Detaylar için console'a bakınız.");
+              console.log("e-İmza aracına SIGNSTEPTWO isteği sonucu.", signStepTwoResult);
+              waitString.value = "Hata oluştu. " + signStepTwoResult.error;
+            } else {
+              logs.value.push("e-İmza aracına SIGNSTEPTWO isteği başarıyla tamamlandı.");
+              // e-imza son adım çalıştırılır. 2. adımda imzalanan veri API'ye gönderilir
+              const  finishSignForPadesRequestV2 = {
+                keyId: createStateOnOnaylarimApiResult.keyID,
+                keySecret: createStateOnOnaylarimApiResult.keySecret,
+                signedData: signStepTwoResult.signedData,
+                operationId: createStateOnOnaylarimApiResult.operationId,
+                signatureLevel: selectedPadesSignatureLevel.value.value,
+              } as FinishSignForPadesRequestV2;
+              logs.value.push("Sizin sunucu katmanına FinishSign isteği gönderiliyor.");
+              axios
+                .post(store.API_URL + "/Onaylarim/FinishSignForPadesV2", finishSignForPadesRequestV2)
+                .then((finishSignResponse) => {
+                  logs.value.push("Sizin sunucu katmanına FinishSignForPadesV2 isteği gönderildi. Detaylar için console'a bakınız.");
+                  console.log("Sizin sunucu katmanına FinishSignForPadesV2 isteği gönderildi.", finishSignResponse);
+                  const finishSignResult = finishSignResponse.data as FinishSignResult;
+                  if (finishSignResult.isSuccess) {
+                    logs.value.push("Sizin sunucu katmanına FinishSignForPadesV2 istiği sonucu: İşlem başarılı.");
+                    waitString.value = "İmza işlemi tamamlandı.";
+                    operationId.value = createStateOnOnaylarimApiResult.operationId;
+                  } else {
+                    logs.value.push("Sizin sunucu katmanına FinishSignForPadesV2 istiği sonucu: İşlem başarısız.");
+                    waitString.value = "İmza işlemi tamamlanamadı.";
+                  }
+                })
+                .catch((error) => {
+                  logs.value.push("Sizin sunucu katmanına FinishSignForPadesV2 isteği gönderilemedi. Mesaj: " + HandleError(error) + " Detaylar için console'a bakınız.");
+                  console.log("Sizin sunucu katmanına FinishSignForPadesV2 isteği gönderilemedi.", error);
+                });
+            }
+          }
+        })
+        .catch((error) => {
+          logs.value.push("e-İmza aracına SIGNSTEPTWO isteği gönderilemedi. Mesaj: " + HandleError(error) + " Detaylar için console'a bakınız.");
+          console.log("e-İmza aracına SIGNSTEPTWO isteği gönderilemedi.", error);
+        });
+    })
+    .catch((error) => {
+      logs.value.push("Sizin sunucu katmanına CreateStateOnOnaylarimApiForPadesV2 isteği gönderilemedi. Mesaj: " + HandleError(error) + " Detaylar için console'a bakınız.");
+      console.log("Sizin sunucu katmanına CreateStateOnOnaylarimApiForPadesV2 isteği gönderilemedi.", error);
+    });
 }
 
 // https://github.com/uuidjs/uuid kullanılmak istenmediğinde onun yerine aşağıdaki fonksiyon kullanılabilir
@@ -440,9 +564,9 @@ function DownloadFile() {
 
 <template>
   <main class="space-y-4">
-    <CardComponent title="Mobil İmza V2">
+    <CardComponent title="e-İmza V2">
       <template v-slot:icon>
-        <DevicePhoneMobileIcon></DevicePhoneMobileIcon>
+        <Cog6ToothIcon></Cog6ToothIcon>
       </template>
       <template v-slot:content>
         <div class="flex items-end ">
@@ -450,7 +574,7 @@ function DownloadFile() {
             <div class="text-sm text-gray-700">
               <p>Hangi türde e-imza atılmasını istiyorsanız seçiniz?</p>
             </div>
-            <div class="mt-5 flex items-center">
+            <div class="mt-1 flex items-center">
               <fieldset>
                 <legend class="sr-only">Notification method</legend>
                 <div class="space-y-4 sm:flex sm:items-center sm:space-x-10 sm:space-y-0">
@@ -659,7 +783,7 @@ function DownloadFile() {
               </Listbox>
 
               <div class="mt-2 max-w-sm"
-                v-if="(selectedSignatureType.id === 'cades' || selectedSignatureType.id === 'xades') && selectedIsSerialOrParallelOption.id === 'SERIAL' && signatureList.length > 0">
+                v-if="(selectedSignatureType.id === 'cades' || selectedSignatureType.id === 'xades') && selectedIsSerialOrParallelOption.id === 'SERIAL' && signatureList && signatureList.length > 0">
                 <label for="signaturePath" class="block text-sm/6 font-medium text-gray-900 dark:text-white">Üstüne İmza
                   Atılacak İmza Adı</label>
                 <input type="text" name="signaturePath" id="signaturePath" v-model="signaturePath"
@@ -714,9 +838,14 @@ function DownloadFile() {
 
         </div>
 
-        <div class="mt-4 p-4 border-gray-200 border bg-white " id="signatureList">
-          <label class="block text-sm/6 font-medium text-gray-900 dark:text-white">Dosyadaki Önceki İmzalar</label>
-          <div v-if="signatureList && signatureList.length===0">
+        <div class="mt-4 px-4 py-2 border-gray-200 border bg-white " id="signatureList">
+          <label class="block text-sm font-medium text-gray-900 dark:text-white">Dosyadaki Önceki İmzalar</label>
+          <div v-if="signatureList === null">
+             <div class="text-sm text-gray-700">
+              <p>Belge yüklenmedi.</p>
+            </div>
+          </div>
+          <div v-else-if="signatureList && signatureList.length === 0">
              <div class="text-sm text-gray-700">
               <p>Belgede {{  selectedSignatureType.title }} türünde imza bulunmuyor.</p>
             </div>

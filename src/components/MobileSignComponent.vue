@@ -147,7 +147,7 @@ function DownloadFile() {
                         <div class="text-sm text-gray-700">
                             <p>Hangi türde e-imza atılmasını istiyorsanız seçiniz?</p>
                         </div>
-                        <div class="mt-5 flex items-center">
+                        <div class="mt-1 flex items-center">
                             <fieldset>
                                 <legend class="sr-only">Notification method</legend>
                                 <div class="space-y-4 sm:flex sm:items-center sm:space-x-10 sm:space-y-0">
